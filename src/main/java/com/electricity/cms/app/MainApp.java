@@ -24,7 +24,7 @@ public class MainApp extends Application {
     public void init() {
         // Initialise DB connection
         try {
-            DatabaseUtil.initialize();
+            //DatabaseUtil.initialize();
         } catch (RuntimeException e) {
             LOGGER.log(Level.SEVERE, "[MainApp] Database initialisation failed: " + e.getMessage(), e);
             // App will still start; DB errors surface on first use
@@ -32,7 +32,7 @@ public class MainApp extends Application {
 
         // Initialise persistent SMTP connection
         try {
-            EmailSender.getInstance().initialize();
+           // EmailSender.getInstance().initialize();
         } catch (RuntimeException e) {
             LOGGER.log(Level.WARNING, "[MainApp] SMTP initialisation failed: " + e.getMessage(), e);
             // App continues without email capability
@@ -41,7 +41,8 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        URL fxmlUrl = LoginController.class.getResource("/com/electricity/cms/fxml/login-view.fxml");
+        //change name here to run screen
+        URL fxmlUrl = LoginController.class.getResource("/com/electricity/cms/fxml/submit-complaint.fxml");
         if (fxmlUrl == null) {
             throw new IllegalStateException(
                     "[MainApp] Cannot find login-view.fxml on the classpath at " +

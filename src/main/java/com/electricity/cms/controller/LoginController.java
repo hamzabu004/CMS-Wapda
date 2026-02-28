@@ -1,11 +1,17 @@
 package com.electricity.cms.controller;
+import com.electricity.cms.controller.CustomerDashboardController;
 import com.electricity.cms.model.User;
 import com.electricity.cms.repository.UserRepository;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,10 +46,8 @@ public class LoginController {
             Optional<User> result = userRepository.findByEmail(email.trim());
             if (result.isPresent() && password.equals(result.get().getPassword())) {
                 User user = result.get();
-                String name = (user.getPerson() != null && user.getPerson().getFullName() != null)
-                              ? user.getPerson().getFullName() : email;
                 LOGGER.info("[Login] Success: " + email);
-                showMessage("Welcome, " + name + "!  |  Role: " + user.getRole(), true);
+                navigate_to_dashboard(user);
             } else {
                 passwordField.clear();
                 showMessage("Invalid email or password.", false);
@@ -53,6 +57,27 @@ public class LoginController {
             showMessage("Error: " + e.getMessage(), false);
         }
     }
+    private void navigate_to_dashboard(User user) {
+        try {
+            URL fxml_url = getClass().getResource("/com/electricity/cms/fxml/customer-dashboard.fxml");
+            if (fxml_url == null) {
+                showMessage("Dashboard screen not found. Contact support.", false);
+                return;
+            }
+            FXMLLoader loader = new FXMLLoader(fxml_url);
+            Scene scene = new Scene(loader.load());
+            CustomerDashboardController ctrl = loader.getController();
+            ctrl.set_user(user);
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            stage.setTitle("ECMS — Dashboard");
+            stage.setScene(scene);
+            stage.setResizable(true);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "[Login] Navigation to dashboard failed", e);
+            showMessage("Could not open dashboard: " + e.getMessage(), false);
+        }
+    }
+
     private void showMessage(String message, boolean success) {
         errorLabel.setText(message);
         errorLabel.setStyle(success
