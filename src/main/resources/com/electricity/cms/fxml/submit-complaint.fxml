@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane prefHeight="700" prefWidth="1100" style="-fx-background-color: #f5f0e8;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electricity.cms.controller.SubmitComplaintController">
+
+    <top>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="0" style="-fx-background-color: #2e7d32; -fx-padding: 0 24 0 24; -fx-min-height: 60; -fx-max-height: 60;">
+                <Label style="-fx-text-fill: #f5f0e8; -fx-font-size: 22px; -fx-font-weight: bold; -fx-font-family: 'Georgia';" text="⚡ ECMS" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="usernameLabel" style="-fx-text-fill: #c8e6c9; -fx-font-size: 13px; -fx-padding: 0 16 0 0;" />
+                <Button fx:id="logoutButton" onAction="#handleLogout" style="-fx-background-color: #f5f0e8; -fx-text-fill: #2e7d32;                                -fx-font-size: 12px; -fx-font-weight: bold;                                -fx-background-radius: 4; -fx-cursor: hand;                                -fx-padding: 6 14 6 14;" text="Logout" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <HBox spacing="0">
+
+            <VBox spacing="2" style="-fx-background-color: #3a5a3c; -fx-padding: 20 0 20 0; -fx-min-width: 200; -fx-max-width: 200;">
+
+                <Label style="-fx-text-fill: #a5d6a7; -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 0 0 8 18;" text="MENU" />
+
+                <Button fx:id="navDashboard" maxWidth="Infinity" onAction="#handleNavDashboard" style="-fx-background-color: transparent; -fx-text-fill: #c8e6c9; -fx-alignment: CENTER_LEFT; -fx-padding: 12 18 12 18; -fx-font-size: 13px; -fx-cursor: hand;" text="🏠  Dashboard" />
+
+                <Button fx:id="navMyComplaints" maxWidth="Infinity" onAction="#handleNavMyComplaints" style="-fx-background-color: transparent; -fx-text-fill: #c8e6c9; -fx-alignment: CENTER_LEFT; -fx-padding: 12 18 12 18; -fx-font-size: 13px; -fx-cursor: hand;" text="📋  My Complaints" />
+
+                <Button fx:id="navSubmitComplaint" maxWidth="Infinity" onAction="#handleNavSubmitComplaint" style="-fx-background-color: #4caf50; -fx-text-fill: #f5f0e8; -fx-alignment: CENTER_LEFT; -fx-padding: 12 18 12 18; -fx-font-size: 13px; -fx-cursor: hand;" text="➕  Submit Complaint" />
+
+                <Button fx:id="navFeedback" maxWidth="Infinity" onAction="#handleNavFeedback" style="-fx-background-color: transparent; -fx-text-fill: #c8e6c9; -fx-alignment: CENTER_LEFT; -fx-padding: 12 18 12 18; -fx-font-size: 13px; -fx-cursor: hand;" text="  Feedback" />
+
+            </VBox>
+
+            <ScrollPane fitToWidth="true" style="-fx-background: #f5f0e8; -fx-background-color: #f5f0e8; -fx-border-color: transparent;" HBox.hgrow="ALWAYS">
+
+                <VBox spacing="20" style="-fx-padding: 32 40 40 40; -fx-max-width: 720;">
+
+                    <Label style="-fx-text-fill: #2e3a1e; -fx-font-size: 22px; -fx-font-weight: bold;" text="Complaint Submission Form" />
+
+                    <!-- Complaint Type -->
+                    <VBox spacing="6">
+                        <Label style="-fx-text-fill: #3a2a0a; -fx-font-size: 13px; -fx-font-weight: bold;" text="Complaint Type *" />
+                        <ComboBox fx:id="complaintTypeCombo" maxWidth="Infinity" promptText="— Select complaint type —" style="-fx-background-color: white;                                          -fx-border-color: #c8b89a;                                          -fx-border-radius: 4;                                          -fx-background-radius: 4;                                          -fx-font-size: 13px;" />
+                    </VBox>
+
+                    <!-- Address -->
+                    <VBox spacing="6">
+                        <Label style="-fx-text-fill: #3a2a0a; -fx-font-size: 13px; -fx-font-weight: bold;" text="Address *" />
+                        <TextField fx:id="addressField"
+                                   maxWidth="Infinity"
+                                   promptText="Enter complaint location / address"
+                                   style="-fx-background-color: white;
+                      -fx-border-color: #c8b89a;
+                      -fx-border-radius: 4;
+                      -fx-background-radius: 4;
+                      -fx-font-size: 13px;" />
+                    </VBox>
+
+                    <!-- Description -->
+                    <VBox spacing="6">
+                        <Label style="-fx-text-fill: #3a2a0a; -fx-font-size: 13px; -fx-font-weight: bold;" text="Description *" />
+                        <TextArea fx:id="descriptionArea" prefRowCount="5" promptText="Describe your complaint in detail..." style="-fx-background-color: white;                                          -fx-border-color: #c8b89a;                                          -fx-border-radius: 4;                                          -fx-background-radius: 4;                                          -fx-font-size: 13px;" wrapText="true" />
+                    </VBox>
+
+                    <Label fx:id="statusLabel" managed="false" style="-fx-font-size: 12px;" visible="false" wrapText="true" />
+
+                    <Button fx:id="submitButton" onAction="#handleSubmitComplaint" style="-fx-background-color: #2e7d32; -fx-text-fill: #f5f0e8;                                    -fx-font-size: 13px; -fx-font-weight: bold;                                    -fx-background-radius: 6;" text="    Submit    " />
+
+                </VBox>
+            </ScrollPane>
+        </HBox>
+    </center>
+</BorderPane>
