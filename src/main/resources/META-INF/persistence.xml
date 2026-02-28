@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+                 https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+    <persistence-unit name="electricity-cms-pu" transaction-type="RESOURCE_LOCAL">
+        <class>com.electricity.cms.model.Person</class>
+        <class>com.electricity.cms.model.User</class>
+        <class>com.electricity.cms.model.Division</class>
+        <class>com.electricity.cms.model.SubDivision</class>
+        <class>com.electricity.cms.model.AdministrativeZone</class>
+        <class>com.electricity.cms.model.Consumer</class>
+        <class>com.electricity.cms.model.Bill</class>
+        <class>com.electricity.cms.model.Complaint</class>
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <properties>
+            <!--
+                JDBC credentials are NOT set here.
+                They are injected at runtime by DatabaseUtil.java
+                which reads DB_URL, DB_USERNAME, DB_PASSWORD from .env
+            -->
+            <property name="jakarta.persistence.jdbc.driver"
+                      value="org.postgresql.Driver"/>
+            <property name="hibernate.connection.pool_size" value="5"/>
+            <property name="hibernate.dialect"
+                      value="org.hibernate.dialect.PostgreSQLDialect"/>
+        </properties>
+    </persistence-unit>
+</persistence>
