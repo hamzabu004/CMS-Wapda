@@ -32,12 +32,11 @@ public class SubmitComplaintController {
     @FXML
     public void initialize() {
         complaintTypeCombo.getItems().addAll(
-                "Power Outage",
-                "Voltage Fluctuation",
-                "Billing Issue",
-                "Faulty Meter",
-                "Transformer Fault",
-                "Other"
+                "BILLING",
+                "OUTAGE",
+                "METER",
+                "VOLTAGE",
+                "OTHER"
         );
         statusLabel.setVisible(false);
         statusLabel.setManaged(false);
