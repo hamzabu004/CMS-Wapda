@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electricity.cms.controller.DashboardController" style="-fx-background-color: transparent;">
+    <content>
+        <VBox spacing="14" style="-fx-padding: 10; -fx-background-color: #faf8f2;">
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Dashboard" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #284a34;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button text="Current Month" onAction="#loadCurrentMonth" style="-fx-background-color: #2d7f4d; -fx-text-fill: white;" />
+            </HBox>
+
+            <HBox spacing="10">
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-border-color: #d6cfbf;">
+                    <Label text="Total Complaints" />
+                    <Label fx:id="totalLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-border-color: #d6cfbf;">
+                    <Label text="Resolved" />
+                    <Label fx:id="resolvedLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-border-color: #d6cfbf;">
+                    <Label text="Unresolved" />
+                    <Label fx:id="unresolvedLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-border-color: #d6cfbf;">
+                    <Label text="Escalated" />
+                    <Label fx:id="escalatedLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+                </VBox>
+            </HBox>
+
+            <HBox fx:id="technicianStatsRow" spacing="10">
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-border-color: #d6cfbf;">
+                    <Label text="Free Technicians" />
+                    <Label fx:id="freeTechniciansLabel" text="0" style="-fx-font-size: 22px; -fx-font-weight: bold;" />
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-border-color: #d6cfbf;">
+                    <Label text="Assigned Technicians" />
+                    <Label fx:id="assignedTechniciansLabel" text="0" style="-fx-font-size: 22px; -fx-font-weight: bold;" />
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 14; -fx-border-color: #d6cfbf;">
+                    <Label text="Pending Unassigned" />
+                    <Label fx:id="unassignedQueueLabel" text="0" style="-fx-font-size: 22px; -fx-font-weight: bold;" />
+                </VBox>
+            </HBox>
+        </VBox>
+    </content>
+</ScrollPane>

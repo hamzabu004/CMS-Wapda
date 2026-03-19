@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="12" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electricity.cms.controller.CMPController" style="-fx-background-color: #faf8f2; -fx-padding: 14;">
+    <HBox alignment="CENTER_LEFT" spacing="8">
+        <Label fx:id="screenTitleLabel" text="Complaints" style="-fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: #234431;" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="lodgeComplaintButton" text="Lodge Complaint" onAction="#lodgeComplaint" style="-fx-background-color: #1f8f50; -fx-text-fill: white;" />
+        <Button fx:id="escalateButton" text="Escalate Selected" onAction="#escalateSelected" style="-fx-background-color: #b1701a; -fx-text-fill: white;" />
+    </HBox>
+
+    <HBox fx:id="filterBar" spacing="8">
+        <ToggleButton fx:id="allToggle" text="All" onAction="#showAll" selected="true" />
+        <ToggleButton fx:id="unresolvedToggle" text="Unresolved" onAction="#showUnresolved" />
+        <ToggleButton fx:id="resolvedToggle" text="Resolved" onAction="#showResolved" />
+    </HBox>
+
+    <TableView fx:id="complaintsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID" prefWidth="190" />
+            <TableColumn fx:id="categoryColumn" text="Category" prefWidth="120" />
+            <TableColumn fx:id="statusColumn" text="Status" prefWidth="130" />
+            <TableColumn fx:id="lastUpdatedColumn" text="Last Updated" prefWidth="160" />
+            <TableColumn fx:id="submittedColumn" text="Submitted" prefWidth="160" />
+            <TableColumn fx:id="actionColumn" text="Assign" prefWidth="120" />
+        </columns>
+    </TableView>
+</VBox>

@@ -7,12 +7,10 @@
     <persistence-unit name="electricity-cms-pu" transaction-type="RESOURCE_LOCAL">
         <class>com.electricity.cms.model.Person</class>
         <class>com.electricity.cms.model.User</class>
-        <class>com.electricity.cms.model.Division</class>
-        <class>com.electricity.cms.model.SubDivision</class>
-        <class>com.electricity.cms.model.AdministrativeZone</class>
+        <class>com.electricity.cms.model.Region</class>
         <class>com.electricity.cms.model.Consumer</class>
-        <class>com.electricity.cms.model.Bill</class>
         <class>com.electricity.cms.model.Complaint</class>
+        <class>com.electricity.cms.model.ComplaintStatusHistory</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <!--
