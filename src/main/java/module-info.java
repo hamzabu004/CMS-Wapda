@@ -35,7 +35,9 @@ module com.electricity.cms {
     // Exports
     exports com.electricity.cms.app;
     exports com.electricity.cms.controller;
+    exports com.electricity.cms.dto;
     exports com.electricity.cms.model;
     exports com.electricity.cms.repository;
+    exports com.electricity.cms.service;
     exports com.electricity.cms.util;
 }
