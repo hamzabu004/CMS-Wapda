@@ -1,17 +1,18 @@
 package com.electricity.cms.app;
 
-import com.electricity.cms.util.DatabaseUtil;
-import com.electricity.cms.util.EmailSender;
-import com.electricity.cms.controller.LoginController;
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.electricity.cms.controller.AuthController;
+import com.electricity.cms.util.DatabaseUtil;
+import com.electricity.cms.util.EmailSender;
+
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 /**
  * JavaFX Application entry point for the Electricity Complaint Management System.
@@ -24,7 +25,7 @@ public class MainApp extends Application {
     public void init() {
         // Initialise DB connection
         try {
-            //DatabaseUtil.initialize();
+            DatabaseUtil.initialize();
         } catch (RuntimeException e) {
             LOGGER.log(Level.SEVERE, "[MainApp] Database initialisation failed: " + e.getMessage(), e);
             // App will still start; DB errors surface on first use
@@ -41,8 +42,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        //change name here to run screen
-        URL fxmlUrl = LoginController.class.getResource("/com/electricity/cms/fxml/submit-complaint.fxml");
+        URL fxmlUrl = AuthController.class.getResource("/com/electricity/cms/fxml/login-view.fxml");
         if (fxmlUrl == null) {
             throw new IllegalStateException(
                     "[MainApp] Cannot find login-view.fxml on the classpath at " +
