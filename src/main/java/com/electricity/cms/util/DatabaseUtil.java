@@ -1,12 +1,11 @@
 package com.electricity.cms.util;
 
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
-
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 
 /**
  * Manages a single shared EntityManagerFactory for the application lifetime.
@@ -31,14 +30,13 @@ public class DatabaseUtil {
         }
         try {
             Map<String, String> props = new HashMap<>();
-            props.put("jakarta.persistence.jdbc.url",      EnvLoader.get("DB_URL"));
+            props.put("jakarta.persistence.jdbc.url",      resolveJdbcUrl());
             props.put("jakarta.persistence.jdbc.user",     EnvLoader.get("DB_USERNAME"));
             props.put("jakarta.persistence.jdbc.password", EnvLoader.get("DB_PASSWORD"));
             props.put("jakarta.persistence.jdbc.driver",   "org.postgresql.Driver");
 
-            // Optional: auto-create / validate schema
-            props.put("hibernate.hbm2ddl.auto",
-                      EnvLoader.getOrDefault("DB_DDL_AUTO", "update"));
+            String ddlMode = resolveDdlMode();
+            props.put("hibernate.hbm2ddl.auto", ddlMode);
             props.put("hibernate.show_sql",
                       EnvLoader.getOrDefault("DB_SHOW_SQL", "false"));
             props.put("hibernate.format_sql", "true");
@@ -74,6 +72,41 @@ public class DatabaseUtil {
             emf.close();
             LOGGER.info("[DatabaseUtil] EntityManagerFactory closed.");
         }
+    }
+
+    private static String resolveDdlMode() {
+        String allowSchemaUpdate = EnvLoader.getOrDefault("DB_ALLOW_SCHEMA_UPDATE", "false");
+        if (!"true".equalsIgnoreCase(allowSchemaUpdate)) {
+            return "none";
+        }
+
+        String configured = EnvLoader.getOrDefault("DB_DDL_AUTO", "none").trim().toLowerCase();
+        if (configured.isEmpty()) {
+            return "none";
+        }
+
+        return switch (configured) {
+            case "none", "validate", "update", "create", "create-drop" -> configured;
+            default -> {
+                LOGGER.warning("[DatabaseUtil] Unsupported DB_DDL_AUTO='" + configured + "'. Falling back to 'none'.");
+                yield "none";
+            }
+        };
+    }
+
+    private static String resolveJdbcUrl() {
+        String url = EnvLoader.get("DB_URL");
+        String disablePreparedStatements = EnvLoader.getOrDefault("DB_DISABLE_SERVER_PREPARED", "true");
+        if (!"true".equalsIgnoreCase(disablePreparedStatements)) {
+            return url;
+        }
+
+        if (url.contains("preferQueryMode=")) {
+            return url;
+        }
+
+        String separator = url.contains("?") ? "&" : "?";
+        return url + separator + "preferQueryMode=simple";
     }
 }
 
