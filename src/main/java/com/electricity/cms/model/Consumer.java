@@ -1,55 +1,143 @@
 package com.electricity.cms.model;
-import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+
 @Entity
 @Table(name = "consumers")
 public class Consumer {
-    public enum ConnectionType { RESIDENT, COMMERCIAL }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "UUID")
     private UUID id;
-    @ManyToOne(fetch = FetchType.LAZY)
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "person_id", nullable = false)
     private Person person;
-    @Column(name = "consumer_id", unique = true, length = 50)
-    private String consumerId;
-    @Column(name = "bill_reference", unique = true, length = 20)
-    private String billReference;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "region_id", nullable = false)
+    private Region region;
+
+    @Column(name = "consumer_reference", nullable = false, unique = true, length = 50)
+    private String consumerReference;
+
+    @Column(name = "meter_number", nullable = false, unique = true, length = 50)
+    private String meterNumber;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "connection_type", nullable = false, columnDefinition = "conn_type")
-    private ConnectionType connectionType = ConnectionType.RESIDENT;
-    @Column(name = "installation_date")
+    @Column(name = "connection_type", nullable = false, length = 20)
+    private ConnType connectionType;
+
+    @Column(name = "installation_date", nullable = false)
     private LocalDate installationDate;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "zone_id")
-    private AdministrativeZone zone;
-    @Column(name = "current_address", columnDefinition = "TEXT")
-    private String currentAddress;
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-    public Consumer() {}
-    public UUID            getId()                            { return id; }
-    public Person          getPerson()                        { return person; }
-    public void            setPerson(Person v)                { this.person = v; }
-    public String          getConsumerId()                    { return consumerId; }
-    public void            setConsumerId(String v)            { this.consumerId = v; }
-    public String          getBillReference()                 { return billReference; }
-    public void            setBillReference(String v)         { this.billReference = v; }
-    public ConnectionType  getConnectionType()                { return connectionType; }
-    public void            setConnectionType(ConnectionType v){ this.connectionType = v; }
-    public LocalDate       getInstallationDate()              { return installationDate; }
-    public void            setInstallationDate(LocalDate v)   { this.installationDate = v; }
-    public AdministrativeZone getZone()                       { return zone; }
-    public void            setZone(AdministrativeZone v)      { this.zone = v; }
-    public String          getCurrentAddress()                { return currentAddress; }
-    public void            setCurrentAddress(String v)        { this.currentAddress = v; }
-    public LocalDateTime   getUpdatedAt()                     { return updatedAt; }
-    public void            setUpdatedAt(LocalDateTime v)      { this.updatedAt = v; }
-    @Override
-    public String toString() {
-        return "Consumer{id=" + id + ", consumerId='" + consumerId + "'}";
+
+    @Column(name = "meter_address", nullable = false, columnDefinition = "TEXT")
+    private String meterAddress;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
+
+    public String getConsumerReference() {
+        return consumerReference;
+    }
+
+    public void setConsumerReference(String consumerReference) {
+        this.consumerReference = consumerReference;
+    }
+
+    public String getMeterNumber() {
+        return meterNumber;
+    }
+
+    public void setMeterNumber(String meterNumber) {
+        this.meterNumber = meterNumber;
+    }
+
+    public ConnType getConnectionType() {
+        return connectionType;
+    }
+
+    public void setConnectionType(ConnType connectionType) {
+        this.connectionType = connectionType;
+    }
+
+    public LocalDate getInstallationDate() {
+        return installationDate;
+    }
+
+    public void setInstallationDate(LocalDate installationDate) {
+        this.installationDate = installationDate;
+    }
+
+    public String getMeterAddress() {
+        return meterAddress;
+    }
+
+    public void setMeterAddress(String meterAddress) {
+        this.meterAddress = meterAddress;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

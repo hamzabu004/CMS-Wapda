@@ -1,65 +1,105 @@
 package com.electricity.cms.model;
-import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+
 @Entity
 @Table(name = "complaints")
 public class Complaint {
-    public enum ComplaintStatus { PENDING, IN_PROGRESS, RESOLVED, REJECTED }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "UUID")
     private UUID id;
-    /** Always set — even walk-in non-registered complainants have a person record. */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "person_id", nullable = false)
-    private Person person;
-    /** Nullable — complaint may come from a non-registered consumer. */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "consumer_id")
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "consumer_id", nullable = false)
     private Consumer consumer;
-    /** Nullable — only set when complaint is bill-related. */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bill_id")
-    private Bill bill;
-    @Column(name = "subject", length = 255)
-    private String subject;
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
-    @Column(name = "evidence")
-    private byte[] evidence;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, columnDefinition = "complaint_status")
+    @Column(name = "category", nullable = false, length = 20)
+    private ComplaintCategory category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
     private ComplaintStatus status = ComplaintStatus.PENDING;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-    public Complaint() {}
+
+    @Column(name = "last_updated", nullable = false)
+    private LocalDateTime lastUpdated;
+
     @PrePersist
-    private void prePersist() {
-        if (createdAt == null) createdAt = LocalDateTime.now();
+    void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = now;
+        }
+        if (lastUpdated == null) {
+            lastUpdated = now;
+        }
     }
-    public UUID            getId()                       { return id; }
-    public Person          getPerson()                   { return person; }
-    public void            setPerson(Person v)           { this.person = v; }
-    public Consumer        getConsumer()                 { return consumer; }
-    public void            setConsumer(Consumer v)       { this.consumer = v; }
-    public Bill            getBill()                     { return bill; }
-    public void            setBill(Bill v)               { this.bill = v; }
-    public String          getSubject()                  { return subject; }
-    public void            setSubject(String v)          { this.subject = v; }
-    public String          getDescription()              { return description; }
-    public void            setDescription(String v)      { this.description = v; }
-    public byte[]          getEvidence()                 { return evidence; }
-    public void            setEvidence(byte[] v)         { this.evidence = v; }
-    public ComplaintStatus getStatus()                   { return status; }
-    public void            setStatus(ComplaintStatus v)  { this.status = v; }
-    public LocalDateTime   getCreatedAt()                { return createdAt; }
-    public LocalDateTime   getUpdatedAt()                { return updatedAt; }
-    public void            setUpdatedAt(LocalDateTime v) { this.updatedAt = v; }
-    @Override
-    public String toString() {
-        return "Complaint{id=" + id + ", status=" + status + ", subject='" + subject + "'}";
+
+    @PreUpdate
+    void preUpdate() {
+        lastUpdated = LocalDateTime.now();
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public Consumer getConsumer() {
+        return consumer;
+    }
+
+    public void setConsumer(Consumer consumer) {
+        this.consumer = consumer;
+    }
+
+    public ComplaintCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(ComplaintCategory category) {
+        this.category = category;
+    }
+
+    public ComplaintStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ComplaintStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(LocalDateTime lastUpdated) {
+        this.lastUpdated = lastUpdated;
     }
 }
