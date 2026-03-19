@@ -7,8 +7,12 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.VBox?>
+<?import java.lang.String?>
 
 <VBox spacing="10" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electricity.cms.controller.RegistrationController" style="-fx-padding: 16; -fx-background-color: #faf8f2;">
+    <stylesheets>
+        <String fx:value="@../styles/styles.css" />
+    </stylesheets>
     <Label text="Customer Registration" style="-fx-font-size: 19px; -fx-font-weight: bold;" />
 
     <GridPane hgap="10" vgap="8">
@@ -43,6 +47,6 @@
         <TextField fx:id="regionIdField" GridPane.rowIndex="9" GridPane.columnIndex="1" />
     </GridPane>
 
-    <Button text="Register" onAction="#registerConsumer" style="-fx-background-color: #2d7f4d; -fx-text-fill: white;" />
+    <Button text="Register" onAction="#registerConsumer" styleClass="primary-button" />
     <Label fx:id="statusLabel" />
 </VBox>

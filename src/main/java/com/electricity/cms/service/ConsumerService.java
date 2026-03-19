@@ -1,5 +1,6 @@
 package com.electricity.cms.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.electricity.cms.model.Consumer;
@@ -57,5 +58,9 @@ public class ConsumerService {
     public Consumer getConsumerByUserId(UUID userId) {
         return consumerRepository.findByUserId(userId)
             .orElseThrow(() -> new IllegalArgumentException("No consumer linked with this user."));
+    }
+
+    public List<Consumer> getAllConsumersByUserId(UUID userId) {
+        return consumerRepository.findAllByUserId(userId);
     }
 }

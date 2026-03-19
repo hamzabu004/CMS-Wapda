@@ -51,7 +51,8 @@ public class AuthController {
             stage.setScene(new Scene(root, 1200, 760));
             stage.setResizable(true);
         } catch (IllegalArgumentException | IOException ex) {
-            showError(ex.getMessage());
+            showError("Login failed");
+            System.err.println("Login failed: " + ex.getMessage());
         }
     }
 
@@ -59,5 +60,17 @@ public class AuthController {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);
+		// hide after 2 seconds
+		new Thread(() -> {
+			try {
+				Thread.sleep(2000);
+				javafx.application.Platform.runLater(() -> {
+					errorLabel.setVisible(false);
+					errorLabel.setManaged(false);
+				});
+			} catch (InterruptedException e) {
+				// Ignore
+			}
+		}).start();
     }
 }

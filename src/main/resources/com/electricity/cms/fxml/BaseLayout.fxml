@@ -8,15 +8,19 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import java.lang.String?>
 
 <BorderPane prefHeight="760.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electricity.cms.controller.MainController" style="-fx-background-color: #f0efe8;">
+    <stylesheets>
+        <String fx:value="@../styles/styles.css" />
+    </stylesheets>
     <top>
         <VBox>
             <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #1f5f3b; -fx-padding: 14 20 14 20;">
                 <Label text="WAPDA CMS" style="-fx-text-fill: #f9f7f0; -fx-font-size: 19px; -fx-font-weight: bold;" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Label fx:id="headerUserLabel" text="-" style="-fx-text-fill: #d5f4d4; -fx-font-size: 13px;" />
-                <Button text="Logout" onAction="#logout" style="-fx-background-color: #d9eadf; -fx-text-fill: #1f5f3b; -fx-font-weight: bold; -fx-padding: 6 12 6 12;" />
+                <Button text="Logout" onAction="#logout" styleClass="logout-button" />
             </HBox>
             <HBox style="-fx-background-color: #e5e0cf; -fx-padding: 6 20 6 20;">
                 <Label fx:id="breadcrumbLabel" text="Dashboard" style="-fx-text-fill: #4f5a3a; -fx-font-size: 12px;" />

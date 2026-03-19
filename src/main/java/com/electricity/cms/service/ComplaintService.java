@@ -118,6 +118,15 @@ public class ComplaintService {
 
     public List<Complaint> getFilteredComplaints(UUID userId, UserRole role, String filter, DateRange range) {
         String normalized = filter == null ? "ALL" : filter.trim().toUpperCase(Locale.ROOT);
+        
+        // For QUEUE view with REPRESENTATIVE, show all pending complaints across all regions
+        if ("QUEUE".equals(normalized) && role == UserRole.REPRESENTATIVE) {
+            return getUnassignedQueue().stream()
+                .filter(c -> isWithinDateRange(c, range))
+                .sorted(Comparator.comparing(Complaint::getLastUpdated).reversed())
+                .collect(Collectors.toList());
+        }
+        
         List<Complaint> base = complaintsVisibleToRole(userId, role);
 
         return base.stream()
@@ -185,7 +194,8 @@ public class ComplaintService {
             return isEscalatedComplaint(complaint);
         }
         if ("QUEUE".equals(filter)) {
-            return historyRepository.findByComplaintId(complaint.getId()).isEmpty();
+            return complaint.getStatus() == ComplaintStatus.PENDING;
+               // && historyRepository.findByComplaintId(complaint.getId()).isEmpty();
         }
         if ("ASSIGNED".equals(filter)) {
             return isAssignedToTechnician(complaint);

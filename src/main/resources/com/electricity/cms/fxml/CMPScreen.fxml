@@ -9,19 +9,23 @@
 <?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import java.lang.String?>
 
 <VBox spacing="12" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electricity.cms.controller.CMPController" style="-fx-background-color: #faf8f2; -fx-padding: 14;">
+    <stylesheets>
+        <String fx:value="@../styles/styles.css" />
+    </stylesheets>
     <HBox alignment="CENTER_LEFT" spacing="8">
         <Label fx:id="screenTitleLabel" text="Complaints" style="-fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: #234431;" />
         <Region HBox.hgrow="ALWAYS" />
-        <Button fx:id="lodgeComplaintButton" text="Lodge Complaint" onAction="#lodgeComplaint" style="-fx-background-color: #1f8f50; -fx-text-fill: white;" />
-        <Button fx:id="escalateButton" text="Escalate Selected" onAction="#escalateSelected" style="-fx-background-color: #b1701a; -fx-text-fill: white;" />
+        <Button fx:id="lodgeComplaintButton" text="Lodge Complaint" onAction="#lodgeComplaint" styleClass="success-button" />
+        <Button fx:id="escalateButton" text="Escalate Selected" onAction="#escalateSelected" styleClass="warning-button" />
     </HBox>
 
     <HBox fx:id="filterBar" spacing="8">
-        <ToggleButton fx:id="allToggle" text="All" onAction="#showAll" selected="true" />
-        <ToggleButton fx:id="unresolvedToggle" text="Unresolved" onAction="#showUnresolved" />
-        <ToggleButton fx:id="resolvedToggle" text="Resolved" onAction="#showResolved" />
+        <ToggleButton fx:id="allToggle" text="All" onAction="#showAll" selected="true" styleClass="toggle-button" />
+        <ToggleButton fx:id="unresolvedToggle" text="Unresolved" onAction="#showUnresolved" styleClass="toggle-button" />
+        <ToggleButton fx:id="resolvedToggle" text="Resolved" onAction="#showResolved" styleClass="toggle-button" />
     </HBox>
 
     <TableView fx:id="complaintsTable" VBox.vgrow="ALWAYS">

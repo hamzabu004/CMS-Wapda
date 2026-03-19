@@ -74,6 +74,25 @@ public class ConsumerRepository {
         }
     }
 
+    public List<Consumer> findAllByUserId(UUID userId) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            List<Consumer> results = em.createQuery(
+                    "SELECT DISTINCT c FROM Consumer c " +
+                    "JOIN FETCH c.region r " +
+                    "LEFT JOIN FETCH c.user u " +
+                    "WHERE u.id = :userId " +
+                    "ORDER BY c.meterAddress ASC",
+                    Consumer.class
+                )
+                .setParameter("userId", userId)
+                .getResultList();
+            return results;
+        } finally {
+            em.close();
+        }
+    }
+
     public List<Consumer> findByRegionId(UUID regionId) {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {
