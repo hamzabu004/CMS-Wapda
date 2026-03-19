@@ -14,7 +14,7 @@
             <HBox alignment="CENTER_LEFT">
                 <Label text="Dashboard" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #284a34;" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button text="Current Month" onAction="#loadCurrentMonth" style="-fx-background-color: #2d7f4d; -fx-text-fill: white;" />
+                <Button text="Select Range" onAction="#loadCurrentMonth" style="-fx-background-color: #2d7f4d; -fx-text-fill: white;" />
             </HBox>
 
             <HBox spacing="10">
