@@ -1,12 +1,49 @@
 package com.electricity.cms.repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import com.electricity.cms.model.User;
+import com.electricity.cms.model.UserRole;
 import com.electricity.cms.util.DatabaseUtil;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
-import java.util.Optional;
-import java.util.UUID;
+
 public class UserRepository {
+
+    public User save(User user) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.persist(user);
+            em.getTransaction().commit();
+            return user;
+        } catch (RuntimeException e) {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    public User update(User user) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            em.getTransaction().begin();
+            User merged = em.merge(user);
+            em.getTransaction().commit();
+            return merged;
+        } catch (RuntimeException e) {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
     public Optional<User> findByEmail(String email) {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {
@@ -20,6 +57,52 @@ public class UserRepository {
             em.close();
         }
     }
+
+    public Optional<User> findByUsername(String username) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            List<User> users = em.createQuery(
+                    "SELECT u FROM User u WHERE u.username = :username",
+                    User.class
+                )
+                .setParameter("username", username)
+                .setMaxResults(1)
+                .getResultList();
+            return users.stream().findFirst();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<User> findByRole(UserRole role) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT u FROM User u WHERE u.role = :role ORDER BY u.username",
+                    User.class
+                )
+                .setParameter("role", role)
+                .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<User> findTechniciansByRegion(UUID regionId) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT u FROM User u WHERE u.role = :role AND u.region.id = :regionId ORDER BY u.username",
+                    User.class
+                )
+                .setParameter("role", UserRole.TECHNICIAN)
+                .setParameter("regionId", regionId)
+                .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
     public Optional<User> findById(UUID id) {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {
@@ -28,32 +111,7 @@ public class UserRepository {
             em.close();
         }
     }
-    public void save(User user) {
-        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
-        try {
-            em.getTransaction().begin();
-            em.persist(user);
-            em.getTransaction().commit();
-        } catch (RuntimeException e) {
-            if (em.getTransaction().isActive()) em.getTransaction().rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-    public void update(User user) {
-        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
-        try {
-            em.getTransaction().begin();
-            em.merge(user);
-            em.getTransaction().commit();
-        } catch (RuntimeException e) {
-            if (em.getTransaction().isActive()) em.getTransaction().rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
+
     public void deleteById(UUID id) {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {
