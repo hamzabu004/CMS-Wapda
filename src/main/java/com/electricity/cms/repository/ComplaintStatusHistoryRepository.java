@@ -32,7 +32,7 @@ public class ComplaintStatusHistoryRepository {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {
             return em.createQuery(
-                    "SELECT h FROM ComplaintStatusHistory h WHERE h.complaint.id = :complaintId ORDER BY h.changedAt DESC",
+                    "SELECT h FROM ComplaintStatusHistory h WHERE h.complaint.id = :complaintId ORDER BY h.createdAt DESC",
                     ComplaintStatusHistory.class
                 )
                 .setParameter("complaintId", complaintId)
@@ -46,7 +46,7 @@ public class ComplaintStatusHistoryRepository {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {
             List<ComplaintStatusHistory> history = em.createQuery(
-                    "SELECT h FROM ComplaintStatusHistory h WHERE h.complaint.id = :complaintId ORDER BY h.changedAt DESC",
+                    "SELECT h FROM ComplaintStatusHistory h WHERE h.complaint.id = :complaintId ORDER BY h.createdAt DESC",
                     ComplaintStatusHistory.class
                 )
                 .setParameter("complaintId", complaintId)

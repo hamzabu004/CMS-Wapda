@@ -37,6 +37,9 @@ public class Complaint {
     @Column(name = "status", nullable = false, length = 20)
     private ComplaintStatus status = ComplaintStatus.PENDING;
 
+    @Column(name = "customer_blocked", nullable = false)
+    private boolean customerBlocked = false;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -85,6 +88,15 @@ public class Complaint {
 
     public void setStatus(ComplaintStatus status) {
         this.status = status;
+    }
+
+
+    public boolean isCustomerBlocked() {
+        return customerBlocked;
+    }
+
+    public void setCustomerBlocked(boolean customerBlocked) {
+        this.customerBlocked = customerBlocked;
     }
 
     public LocalDateTime getCreatedAt() {

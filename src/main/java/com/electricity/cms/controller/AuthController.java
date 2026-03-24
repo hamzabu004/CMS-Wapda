@@ -51,6 +51,7 @@ public class AuthController {
             stage.setScene(new Scene(root, 1200, 760));
             stage.setResizable(true);
         } catch (IllegalArgumentException | IOException ex) {
+            System.err.println("Login error: " + ex.getMessage());
             showError(ex.getMessage());
         }
     }

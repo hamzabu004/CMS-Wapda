@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -28,24 +29,28 @@ public class ComplaintStatusHistory {
     @JoinColumn(name = "complaint_id", nullable = false)
     private Complaint complaint;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "changed_by", nullable = false)
-    private User changedBy;
+    @ManyToOne
+    @JoinColumn(name = "from_user")
+    private User fromUser;
+
+    @ManyToOne
+    @JoinColumn(name = "to_user")
+    private User toUser;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
-    private ComplaintStatus status;
+    @Column(name = "type", nullable = false, length = 20)
+    private TransferType type;
 
-    @Column(name = "note", columnDefinition = "TEXT")
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Transient
     private String note;
-
-    @Column(name = "changed_at", nullable = false)
-    private LocalDateTime changedAt;
 
     @PrePersist
     void prePersist() {
-        if (changedAt == null) {
-            changedAt = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
         }
     }
 
@@ -61,20 +66,60 @@ public class ComplaintStatusHistory {
         this.complaint = complaint;
     }
 
+    public User getFromUser() {
+        return fromUser;
+    }
+
+    public void setFromUser(User fromUser) {
+        this.fromUser = fromUser;
+    }
+
+    public User getToUser() {
+        return toUser;
+    }
+
+    public void setToUser(User toUser) {
+        this.toUser = toUser;
+    }
+
+    public TransferType getType() {
+        return type;
+    }
+
+    public void setType(TransferType type) {
+        this.type = type;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    // Compatibility accessors for existing service/repository code.
     public User getChangedBy() {
-        return changedBy;
+        return fromUser;
     }
 
     public void setChangedBy(User changedBy) {
-        this.changedBy = changedBy;
+        this.fromUser = changedBy;
     }
 
     public ComplaintStatus getStatus() {
-        return status;
+        if (type == null) {
+            return null;
+        }
+        return type == TransferType.RESOLVED ? ComplaintStatus.RESOLVED : ComplaintStatus.IN_PROGRESS;
     }
 
     public void setStatus(ComplaintStatus status) {
-        this.status = status;
+        if (status == null) {
+            this.type = null;
+            return;
+        }
+        this.type = status == ComplaintStatus.RESOLVED ? TransferType.RESOLVED : TransferType.ASSIGNED;
     }
 
     public String getNote() {
@@ -86,10 +131,10 @@ public class ComplaintStatusHistory {
     }
 
     public LocalDateTime getChangedAt() {
-        return changedAt;
+        return createdAt;
     }
 
     public void setChangedAt(LocalDateTime changedAt) {
-        this.changedAt = changedAt;
+        this.createdAt = changedAt;
     }
 }

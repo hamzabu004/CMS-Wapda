@@ -12,7 +12,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "person")
+@Table(name = "persons")
 public class Person {
 
     @Id
@@ -26,7 +26,7 @@ public class Person {
     @Column(name = "cnic", unique = true, nullable = false, length = 15)
     private String cnic;
 
-    @Column(name = "phone_number", nullable = false, length = 20)
+    @Column(name = "phone_number", nullable = false, length = 15)
     private String phoneNumber;
 
     @Column(name = "created_at", nullable = false)
