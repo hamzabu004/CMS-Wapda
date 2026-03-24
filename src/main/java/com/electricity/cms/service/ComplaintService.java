@@ -1,8 +1,10 @@
 package com.electricity.cms.service;
 
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -14,6 +16,7 @@ import com.electricity.cms.model.ComplaintCategory;
 import com.electricity.cms.model.ComplaintStatus;
 import com.electricity.cms.model.ComplaintStatusHistory;
 import com.electricity.cms.model.Consumer;
+import com.electricity.cms.model.TransferType;
 import com.electricity.cms.model.User;
 import com.electricity.cms.model.UserRole;
 import com.electricity.cms.repository.ComplaintRepository;
@@ -72,11 +75,15 @@ public class ComplaintService {
         Complaint complaint = getComplaintOrThrow(complaintId);
         User representative = getUserOrThrow(repId);
 
+        if (representative.getRole() != UserRole.REPRESENTATIVE) {
+            throw new IllegalArgumentException("Self-assignment is currently supported for representatives only.");
+        }
+
         ComplaintStatusHistory history = new ComplaintStatusHistory();
         history.setComplaint(complaint);
-        history.setChangedBy(representative);
-        history.setStatus(ComplaintStatus.IN_PROGRESS);
-        history.setNote("ASSIGNED_TO_REP:" + representative.getId());
+        history.setFromUser(representative);
+        history.setToUser(representative);
+        history.setType(TransferType.ASSIGNED);
         historyRepository.save(history);
 
         complaint.setStatus(ComplaintStatus.IN_PROGRESS);
@@ -88,11 +95,7 @@ public class ComplaintService {
         User caller = getUserOrThrow(escalatedByUserId);
 
         if (caller.getRole() == UserRole.REPRESENTATIVE) {
-            UUID regionId = complaint.getConsumer().getRegion().getId();
-            User technician = userRepository.findTechniciansByRegion(regionId).stream().findFirst()
-                .orElseThrow(() -> new IllegalStateException("No technician available in complaint region."));
-            createEscalationHistory(complaint, caller, "ESCALATED_TO_TECHNICIAN:" + technician.getId());
-            return;
+            throw new IllegalArgumentException("Representative escalation requires selecting a technician target.");
         }
 
         if (caller.getRole() == UserRole.TECHNICIAN) {
@@ -103,11 +106,64 @@ public class ComplaintService {
                 .filter(u -> u.getRegion() != null && caller.getRegion().getId().equals(u.getRegion().getId()))
                 .findFirst();
             User managerUser = manager.orElseThrow(() -> new IllegalStateException("No manager in technician region."));
-            createEscalationHistory(complaint, caller, "ESCALATED_TO_MANAGER:" + managerUser.getId());
+            createEscalationHistory(complaint, caller, managerUser);
             return;
         }
 
         throw new IllegalArgumentException("Escalation is only allowed for representative or technician.");
+    }
+
+    public List<TechnicianEscalationOption> getRepresentativeEscalationOptions(UUID complaintId, UUID representativeId) {
+        Complaint complaint = getComplaintOrThrow(complaintId);
+        User representative = getUserOrThrow(representativeId);
+
+        if (representative.getRole() != UserRole.REPRESENTATIVE) {
+            throw new IllegalArgumentException("Only representative can fetch technician escalation options.");
+        }
+
+        UUID regionId = complaint.getConsumer().getRegion().getId();
+        return userRepository.findTechniciansByRegion(regionId).stream()
+            .map(technician -> {
+                List<UUID> unresolvedAssignedComplaintIds = historyRepository.findComplaintIdsRoutedToUser(technician.getId()).stream()
+                    .map(complaintRepository::findById)
+                    .flatMap(Optional::stream)
+                    .filter(c -> c.getStatus() != ComplaintStatus.RESOLVED)
+                    .map(Complaint::getId)
+                    .distinct()
+                    .toList();
+
+                String displayName = technician.getUsername() != null && !technician.getUsername().isBlank()
+                    ? technician.getUsername()
+                    : technician.getEmail();
+
+                return new TechnicianEscalationOption(
+                    technician.getId(),
+                    displayName,
+                    unresolvedAssignedComplaintIds
+                );
+            })
+            .toList();
+    }
+
+    public void escalateToTechnician(UUID complaintId, UUID representativeId, UUID technicianId) {
+        Complaint complaint = getComplaintOrThrow(complaintId);
+        User representative = getUserOrThrow(representativeId);
+        User technician = getUserOrThrow(technicianId);
+
+        if (representative.getRole() != UserRole.REPRESENTATIVE) {
+            throw new IllegalArgumentException("Only representative can escalate complaint to technician.");
+        }
+        if (technician.getRole() != UserRole.TECHNICIAN) {
+            throw new IllegalArgumentException("Selected user is not a technician.");
+        }
+
+        UUID complaintRegionId = complaint.getConsumer().getRegion().getId();
+        UUID technicianRegionId = technician.getRegion() != null ? technician.getRegion().getId() : null;
+        if (technicianRegionId == null || !complaintRegionId.equals(technicianRegionId)) {
+            throw new IllegalArgumentException("Technician is not in complaint region.");
+        }
+
+        createEscalationHistory(complaint, representative, technician);
     }
 
     public List<Complaint> getComplaintsByRegion(UUID regionId, DateRange range) {
@@ -131,7 +187,7 @@ public class ComplaintService {
 
         return base.stream()
             .filter(c -> isWithinDateRange(c, range))
-            .filter(c -> matchesFilter(c, normalized))
+            .filter(c -> matchesFilter(c, normalized, userId, role))
             .sorted(Comparator.comparing(Complaint::getLastUpdated).reversed())
             .collect(Collectors.toList());
     }
@@ -160,12 +216,12 @@ public class ComplaintService {
         return stats;
     }
 
-    private void createEscalationHistory(Complaint complaint, User caller, String note) {
+    private void createEscalationHistory(Complaint complaint, User caller, User targetUser) {
         ComplaintStatusHistory history = new ComplaintStatusHistory();
         history.setComplaint(complaint);
-        history.setChangedBy(caller);
-        history.setStatus(ComplaintStatus.IN_PROGRESS);
-        history.setNote(note);
+        history.setFromUser(caller);
+        history.setToUser(targetUser);
+        history.setType(TransferType.ESCALATED);
         historyRepository.save(history);
 
         complaint.setStatus(ComplaintStatus.IN_PROGRESS);
@@ -180,7 +236,7 @@ public class ComplaintService {
             && (complaint.getCreatedAt().isEqual(range.to()) || complaint.getCreatedAt().isBefore(range.to()));
     }
 
-    private boolean matchesFilter(Complaint complaint, String filter) {
+    private boolean matchesFilter(Complaint complaint, String filter, UUID userId, UserRole role) {
         if ("ALL".equals(filter) || filter.isBlank()) {
             return true;
         }
@@ -188,9 +244,12 @@ public class ComplaintService {
             return complaint.getStatus() == ComplaintStatus.RESOLVED;
         }
         if ("UNRESOLVED".equals(filter)) {
-            return complaint.getStatus() != ComplaintStatus.RESOLVED;
+            return complaint.getStatus() != ComplaintStatus.RESOLVED && !isEscalatedComplaint(complaint);
         }
         if ("ESCALATED".equals(filter)) {
+            if (role == UserRole.REPRESENTATIVE || role == UserRole.TECHNICIAN) {
+                return isEscalatedByUser(complaint, userId);
+            }
             return isEscalatedComplaint(complaint);
         }
         if ("QUEUE".equals(filter)) {
@@ -205,18 +264,26 @@ public class ComplaintService {
 
     private boolean isEscalatedComplaint(Complaint complaint) {
         return historyRepository.findByComplaintId(complaint.getId()).stream()
-            .anyMatch(h -> {
-                String note = h.getNote();
-                return note != null && note.startsWith("ESCALATED_TO_");
-            });
+            .anyMatch(h -> h.getType() == TransferType.ESCALATED);
+    }
+
+    public boolean isComplaintEscalated(UUID complaintId) {
+        Complaint complaint = getComplaintOrThrow(complaintId);
+        return isEscalatedComplaint(complaint);
+    }
+
+    private boolean isEscalatedByUser(Complaint complaint, UUID userId) {
+        return historyRepository.findByComplaintId(complaint.getId()).stream()
+            .anyMatch(h -> h.getType() == TransferType.ESCALATED
+                && h.getFromUser() != null
+                && userId.equals(h.getFromUser().getId()));
     }
 
     private boolean isAssignedToTechnician(Complaint complaint) {
         return historyRepository.findByComplaintId(complaint.getId()).stream()
-            .anyMatch(h -> {
-                String note = h.getNote();
-                return note != null && note.contains("TECHNICIAN");
-            });
+            .anyMatch(h -> h.getType() == TransferType.ASSIGNED
+                && h.getToUser() != null
+                && h.getToUser().getRole() == UserRole.TECHNICIAN);
     }
 
     private List<Complaint> complaintsVisibleToRole(UUID userId, UserRole role) {
@@ -227,6 +294,26 @@ public class ComplaintService {
         }
 
         User user = getUserOrThrow(userId);
+
+        if (role == UserRole.REPRESENTATIVE) {
+            List<Complaint> assignedToRepresentative = historyRepository.findAssignedComplaintIdsForUser(userId).stream()
+                .map(complaintRepository::findById)
+                .flatMap(Optional::stream)
+                .toList();
+
+            UUID regionId = user.getRegion() != null ? user.getRegion().getId() : null;
+            List<Complaint> regionalComplaints = regionId == null ? List.of() : complaintRepository.findByRegionId(regionId);
+
+            Map<UUID, Complaint> byId = new LinkedHashMap<>();
+            for (Complaint complaint : regionalComplaints) {
+                byId.put(complaint.getId(), complaint);
+            }
+            for (Complaint complaint : assignedToRepresentative) {
+                byId.put(complaint.getId(), complaint);
+            }
+            return List.copyOf(byId.values());
+        }
+
         UUID regionId = user.getRegion() != null ? user.getRegion().getId() : null;
         if (regionId == null) {
             return List.of();
@@ -242,5 +329,12 @@ public class ComplaintService {
     private User getUserOrThrow(UUID userId) {
         return userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found."));
+    }
+
+    public record TechnicianEscalationOption(
+        UUID technicianId,
+        String technicianName,
+        List<UUID> unresolvedAssignedComplaintIds
+    ) {
     }
 }

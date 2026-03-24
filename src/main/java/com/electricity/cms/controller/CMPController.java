@@ -2,6 +2,9 @@ package com.electricity.cms.controller;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.electricity.cms.dto.DateRange;
 import com.electricity.cms.dto.UserContext;
@@ -11,7 +14,10 @@ import com.electricity.cms.service.ComplaintService;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -27,6 +33,7 @@ public class CMPController implements UserContextAware {
     @FXML private ToggleButton allToggle;
     @FXML private ToggleButton unresolvedToggle;
     @FXML private ToggleButton resolvedToggle;
+    @FXML private ToggleButton escalatedByMeToggle;
     @FXML private HBox filterBar;
     @FXML private Button escalateButton;
     @FXML private Button lodgeComplaintButton;
@@ -49,6 +56,7 @@ public class CMPController implements UserContextAware {
     public void initialize() {
         configureColumns();
         actionColumn.setVisible(false);
+        complaintsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> updateEscalateButtonState());
     }
 
     @Override
@@ -79,13 +87,70 @@ public class CMPController implements UserContextAware {
     }
 
     @FXML
+    private void showEscalatedByMe() {
+        setViewMode(ViewMode.ESCALATED);
+    }
+
+    @FXML
     private void escalateSelected() {
         Complaint selected = complaintsTable.getSelectionModel().getSelectedItem();
         if (selected == null || userContext == null) {
             return;
         }
+
+        if (userContext.role() == UserRole.REPRESENTATIVE) {
+            openRepresentativeEscalationDialog(selected);
+            return;
+        }
+
         complaintService.escalate(selected.getId(), userContext.userId());
         refresh();
+    }
+
+    private void openRepresentativeEscalationDialog(Complaint complaint) {
+        List<ComplaintService.TechnicianEscalationOption> options = complaintService
+            .getRepresentativeEscalationOptions(complaint.getId(), userContext.userId());
+
+        if (options.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("No technician available");
+            alert.setContentText("No technician found in the complaint region.");
+            alert.showAndWait();
+            return;
+        }
+
+        Map<String, UUID> labelToTechnicianId = options.stream().collect(Collectors.toMap(
+            this::buildTechnicianOptionLabel,
+            ComplaintService.TechnicianEscalationOption::technicianId,
+            (left, right) -> left
+        ));
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(labelToTechnicianId.keySet().iterator().next(), labelToTechnicianId.keySet());
+        dialog.setTitle("Escalate Complaint");
+        dialog.setHeaderText("Select technician from complaint region");
+        dialog.setContentText("Technician:");
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setText("Assign");
+
+        dialog.showAndWait().ifPresent(selectedLabel -> {
+            UUID technicianId = labelToTechnicianId.get(selectedLabel);
+            complaintService.escalateToTechnician(complaint.getId(), userContext.userId(), technicianId);
+            refresh();
+        });
+    }
+
+    private String buildTechnicianOptionLabel(ComplaintService.TechnicianEscalationOption option) {
+        List<UUID> unresolvedIds = option.unresolvedAssignedComplaintIds();
+        String complaintList = unresolvedIds.isEmpty()
+            ? "none"
+            : unresolvedIds.stream()
+                .limit(4)
+                .map(id -> id.toString().substring(0, 8))
+                .collect(Collectors.joining(", ")) + (unresolvedIds.size() > 4 ? ", ..." : "");
+
+        return option.technicianName()
+            + " | Active unresolved: " + unresolvedIds.size()
+            + " | Complaints: " + complaintList;
     }
 
     @FXML
@@ -103,11 +168,16 @@ public class CMPController implements UserContextAware {
 
     private void applyRoleVisibility() {
         boolean isCustomer = userContext.role() == UserRole.CUSTOMER;
+        boolean canUseEscalatedByMeFilter = userContext.role() == UserRole.REPRESENTATIVE
+            || userContext.role() == UserRole.TECHNICIAN;
         roleCanEscalate = userContext.role() == UserRole.REPRESENTATIVE || userContext.role() == UserRole.TECHNICIAN;
         lodgeComplaintButton.setVisible(isCustomer);
         lodgeComplaintButton.setManaged(isCustomer);
         escalateButton.setVisible(roleCanEscalate);
         escalateButton.setManaged(roleCanEscalate);
+        escalatedByMeToggle.setVisible(canUseEscalatedByMeFilter);
+        escalatedByMeToggle.setManaged(canUseEscalatedByMeFilter);
+        updateEscalateButtonState();
     }
 
     private void refresh() {
@@ -141,6 +211,23 @@ public class CMPController implements UserContextAware {
         escalateButton.setManaged(!isQueueMode && roleCanEscalate);
         screenTitleLabel.setText(isQueueMode ? "Complaints Queue" : "Complaints");
         configureActionColumn();
+        updateEscalateButtonState();
+    }
+
+    private void updateEscalateButtonState() {
+        if (userContext == null || !roleCanEscalate || viewMode == ViewMode.QUEUE) {
+            escalateButton.setDisable(true);
+            return;
+        }
+
+        Complaint selected = complaintsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            escalateButton.setDisable(true);
+            return;
+        }
+
+        boolean alreadyEscalated = complaintService.isComplaintEscalated(selected.getId());
+        escalateButton.setDisable(alreadyEscalated);
     }
 
     private void configureActionColumn() {

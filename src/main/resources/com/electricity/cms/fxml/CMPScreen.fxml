@@ -26,6 +26,7 @@
         <ToggleButton fx:id="allToggle" text="All" onAction="#showAll" selected="true" styleClass="toggle-button" />
         <ToggleButton fx:id="unresolvedToggle" text="Unresolved" onAction="#showUnresolved" styleClass="toggle-button" />
         <ToggleButton fx:id="resolvedToggle" text="Resolved" onAction="#showResolved" styleClass="toggle-button" />
+        <ToggleButton fx:id="escalatedByMeToggle" text="Escalated By Me" onAction="#showEscalatedByMe" styleClass="toggle-button" />
     </HBox>
 
     <TableView fx:id="complaintsTable" VBox.vgrow="ALWAYS">

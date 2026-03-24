@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.electricity.cms.model.ComplaintStatusHistory;
+import com.electricity.cms.model.TransferType;
 import com.electricity.cms.util.DatabaseUtil;
 
 import jakarta.persistence.EntityManager;
@@ -53,6 +54,38 @@ public class ComplaintStatusHistoryRepository {
                 .setMaxResults(1)
                 .getResultList();
             return history.stream().findFirst();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<UUID> findAssignedComplaintIdsForUser(UUID userId) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT DISTINCT h.complaint.id FROM ComplaintStatusHistory h " +
+                    "WHERE h.type = :type AND h.toUser.id = :userId",
+                    UUID.class
+                )
+                .setParameter("type", TransferType.ASSIGNED)
+                .setParameter("userId", userId)
+                .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<UUID> findComplaintIdsRoutedToUser(UUID userId) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT DISTINCT h.complaint.id FROM ComplaintStatusHistory h " +
+                    "WHERE h.toUser.id = :userId AND h.type IN :types",
+                    UUID.class
+                )
+                .setParameter("userId", userId)
+                .setParameter("types", List.of(TransferType.ASSIGNED, TransferType.ESCALATED))
+                .getResultList();
         } finally {
             em.close();
         }
