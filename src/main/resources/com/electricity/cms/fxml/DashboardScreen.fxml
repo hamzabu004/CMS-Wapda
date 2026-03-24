@@ -7,14 +7,18 @@
 <?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import java.lang.String?>
 
 <ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electricity.cms.controller.DashboardController" style="-fx-background-color: transparent;">
+    <stylesheets>
+        <String fx:value="@../styles/styles.css" />
+    </stylesheets>
     <content>
         <VBox spacing="14" style="-fx-padding: 10; -fx-background-color: #faf8f2;">
             <HBox alignment="CENTER_LEFT">
                 <Label text="Dashboard" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #284a34;" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button text="Current Month" onAction="#loadCurrentMonth" style="-fx-background-color: #2d7f4d; -fx-text-fill: white;" />
+                <Button text="Select Range" onAction="#loadCurrentMonth" styleClass="primary-button" />
             </HBox>
 
             <HBox spacing="10">

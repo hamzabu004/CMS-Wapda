@@ -87,12 +87,12 @@ public class ComplaintRepository {
     public List<Complaint> findUnassigned() {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {
+			System.out.println("Fetching unassigned complaints...");
             return em.createQuery(
-                    "SELECT c FROM Complaint c "+
-					"WHERE c.status = 'PENDING' " + 
-					"ORDER BY c.created_at ASC",
+			"SELECT c FROM Complaint c WHERE c.status = :status ORDER BY c.createdAt ASC",
                     Complaint.class
                 )
+                .setParameter("status", ComplaintStatus.PENDING)
                 .getResultList();
         } finally {
             em.close();
