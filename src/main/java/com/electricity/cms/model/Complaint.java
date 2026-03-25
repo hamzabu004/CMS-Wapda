@@ -43,6 +43,11 @@ public class Complaint {
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
+    @Enumerated(EnumType.STRING)
+    private UserRole lastSenderRole;
+
+    private boolean customerBlocked;
+
     @PrePersist
     void prePersist() {
         LocalDateTime now = LocalDateTime.now();
@@ -102,4 +107,10 @@ public class Complaint {
     public void setLastUpdated(LocalDateTime lastUpdated) {
         this.lastUpdated = lastUpdated;
     }
+
+    public UserRole getLastSenderRole() { return lastSenderRole; }
+    public void setLastSenderRole(UserRole role) { this.lastSenderRole = role; }
+
+    public boolean isCustomerBlocked() { return customerBlocked; }
+    public void setCustomerBlocked(boolean val) { this.customerBlocked = val; }
 }
