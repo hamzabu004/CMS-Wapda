@@ -1,6 +1,7 @@
 package com.electricity.cms.service;
 
 import com.electricity.cms.model.*;
+import com.electricity.cms.dto.UserContext;
 import com.electricity.cms.repository.ComplaintMessageRepository;
 import com.electricity.cms.repository.ComplaintRepository;
 
@@ -13,31 +14,35 @@ public class ComplaintMessageService {
     private final ComplaintMessageRepository messageRepo = new ComplaintMessageRepository();
     private final ComplaintRepository complaintRepo = new ComplaintRepository();
 
-    public void sendMessage(UUID complaintId, String text, User user) {
+    // ✅ FIXED METHOD SIGNATURE
+    public void sendMessage(UUID complaintId, UserContext user, String text) {
 
         Complaint complaint = complaintRepo.findById(complaintId).orElse(null);
         if (complaint == null) return;
 
         // 🚫 BLOCK LOGIC
-        if (user.getRole() == UserRole.CUSTOMER && complaint.isCustomerBlocked()) {
+        if (user.role() == UserRole.CUSTOMER && complaint.isCustomerBlocked()) {
             return;
         }
 
         ComplaintMessage msg = new ComplaintMessage();
         msg.setId(UUID.randomUUID());
         msg.setComplaintId(complaintId);
-        msg.setSenderId(user.getId());
-        msg.setSenderName(user.getUsername());
-        msg.setSenderRole(user.getRole());
+
+        // ✅ USING UserContext
+        msg.setSenderId(user.userId());
+        msg.setSenderName(user.userId().toString()); // if error, replace with user.userId().toString()
+        msg.setSenderRole(user.role());
+
         msg.setMessageText(text);
         msg.setCreatedAt(LocalDateTime.now());
 
         messageRepo.save(msg);
 
         // ✅ Update complaint state
-        complaint.setLastSenderRole(user.getRole());
+        complaint.setLastSenderRole(user.role());
 
-        if (user.getRole() == UserRole.CUSTOMER) {
+        if (user.role() == UserRole.CUSTOMER) {
             complaint.setCustomerBlocked(true);
         } else {
             complaint.setCustomerBlocked(false);

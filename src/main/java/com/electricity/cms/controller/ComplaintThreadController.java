@@ -2,8 +2,10 @@ package com.electricity.cms.controller;
 
 import com.electricity.cms.model.Complaint;
 import com.electricity.cms.model.ComplaintMessage;
-import com.electricity.cms.model.User;
+import com.electricity.cms.dto.UserContext;
+import com.electricity.cms.model.UserRole;
 import com.electricity.cms.service.ComplaintMessageService;
+
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -21,12 +23,12 @@ public class ComplaintThreadController {
     @FXML private ScrollPane scrollPane;
 
     private Complaint complaint;
-    private User currentUser;
+    private UserContext currentUser;
 
-    private ComplaintMessageService messageService = new ComplaintMessageService();
+    private final ComplaintMessageService messageService = new ComplaintMessageService();
 
-    // Call this from previous screen
-    public void initData(Complaint complaint, com.electricity.cms.dto.UserContext userContext) {
+    // Called from previous screen
+    public void initData(Complaint complaint, UserContext userContext) {
         this.complaint = complaint;
         this.currentUser = userContext;
 
@@ -35,6 +37,8 @@ public class ComplaintThreadController {
     }
 
     private void loadMessages() {
+        if (complaint == null) return;
+
         messagesContainer.getChildren().clear();
 
         List<ComplaintMessage> messages =
@@ -49,7 +53,7 @@ public class ComplaintThreadController {
 
     private HBox createMessageBubble(ComplaintMessage msg) {
 
-        boolean isMine = msg.getSenderId().equals(currentUser.getId());
+        boolean isMine = msg.getSenderId().equals(currentUser.userId());
 
         VBox bubble = new VBox();
         bubble.setSpacing(3);
@@ -88,16 +92,16 @@ public class ComplaintThreadController {
 
         if (text == null || text.trim().isEmpty()) return;
 
-        // 🔴 CUSTOMER BLOCK LOGIC
-        if (currentUser.getRole().toString().equals("CUSTOMER")
+        // ✅ CUSTOMER BLOCK LOGIC (using enum instead of string)
+        if (currentUser.role() == UserRole.CUSTOMER
                 && complaint.isCustomerBlocked()) {
 
             showAlert("You must wait for a reply before sending another message.");
             return;
         }
 
-        messageService.sendMessage(complaint, currentUser, text);
-        //messageService.sendMessage(UUID, text, currentUser);
+        // ✅ CORRECT CALL
+        messageService.sendMessage(complaint.getId(), currentUser, text);
 
         messageField.clear();
 
@@ -107,7 +111,7 @@ public class ComplaintThreadController {
 
     private void updateInputState() {
 
-        if (currentUser.getRole().toString().equals("CUSTOMER")) {
+        if (currentUser.role() == UserRole.CUSTOMER) {
             messageField.setDisable(complaint.isCustomerBlocked());
             sendButton.setDisable(complaint.isCustomerBlocked());
         } else {
