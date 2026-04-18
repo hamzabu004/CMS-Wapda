@@ -23,7 +23,16 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.TableRow;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.util.Callback;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class CMPController implements UserContextAware {
 
@@ -45,6 +54,9 @@ public class CMPController implements UserContextAware {
     @FXML private TableColumn<Complaint, String> submittedColumn;
     @FXML private TableColumn<Complaint, String> actionColumn;
 
+    // 🔥 IMPORTANT (for loading thread in center)
+    @FXML private StackPane contentPane;
+
     private final ComplaintService complaintService = new ComplaintService();
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -56,6 +68,19 @@ public class CMPController implements UserContextAware {
     public void initialize() {
         configureColumns();
         actionColumn.setVisible(false);
+
+        // 🔥 DOUBLE CLICK TO OPEN THREAD
+        complaintsTable.setRowFactory(tv -> {
+            TableRow<Complaint> row = new TableRow<>();
+
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    openComplaintThread(row.getItem());
+                }
+            });
+
+            return row;
+        });
         complaintsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> updateEscalateButtonState());
     }
 
@@ -155,28 +180,55 @@ public class CMPController implements UserContextAware {
 
     @FXML
     private void lodgeComplaint() {
-        // Navigation is controlled in main layout. This action is a placeholder for row/thread integration.
+        // your existing logic
+    }
+
+    // 🔥 NEW METHOD (THREAD OPENING)
+    private void openComplaintThread(Complaint complaint) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ComplaintThread.fxml"));
+            Parent root = loader.load();
+
+            ComplaintThreadController controller = loader.getController();
+            controller.initData(complaint, userContext);
+
+            // Replace center content
+            contentPane.getChildren().clear();
+            contentPane.getChildren().add(root);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void configureColumns() {
-        idColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getId().toString()));
-        categoryColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCategory().name()));
-        statusColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus().name()));
-        lastUpdatedColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getLastUpdated().format(formatter)));
-        submittedColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCreatedAt().format(formatter)));
+        idColumn.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getId().toString()));
+
+        categoryColumn.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getCategory().name()));
+
+        statusColumn.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getStatus().name()));
+
+        lastUpdatedColumn.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getLastUpdated().format(formatter)));
+
+        submittedColumn.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getCreatedAt().format(formatter)));
     }
 
     private void applyRoleVisibility() {
         boolean isCustomer = userContext.role() == UserRole.CUSTOMER;
-        boolean canUseEscalatedByMeFilter = userContext.role() == UserRole.REPRESENTATIVE
-            || userContext.role() == UserRole.TECHNICIAN;
-        roleCanEscalate = userContext.role() == UserRole.REPRESENTATIVE || userContext.role() == UserRole.TECHNICIAN;
+        roleCanEscalate =
+                userContext.role() == UserRole.REPRESENTATIVE ||
+                        userContext.role() == UserRole.TECHNICIAN;
+
         lodgeComplaintButton.setVisible(isCustomer);
         lodgeComplaintButton.setManaged(isCustomer);
+
         escalateButton.setVisible(roleCanEscalate);
         escalateButton.setManaged(roleCanEscalate);
-        escalatedByMeToggle.setVisible(canUseEscalatedByMeFilter);
-        escalatedByMeToggle.setManaged(canUseEscalatedByMeFilter);
         updateEscalateButtonState();
     }
 
@@ -202,14 +254,18 @@ public class CMPController implements UserContextAware {
         );
 
         complaintsTable.getItems().setAll(complaints);
+
         boolean isQueueMode = viewMode == ViewMode.QUEUE;
+
         actionColumn.setVisible(isQueueMode);
         filterBar.setVisible(!isQueueMode);
         filterBar.setManaged(!isQueueMode);
         // Queue is assignment-only, so escalation action is hidden there.
         escalateButton.setVisible(!isQueueMode && roleCanEscalate);
         escalateButton.setManaged(!isQueueMode && roleCanEscalate);
+
         screenTitleLabel.setText(isQueueMode ? "Complaints Queue" : "Complaints");
+
         configureActionColumn();
         updateEscalateButtonState();
     }
@@ -231,29 +287,37 @@ public class CMPController implements UserContextAware {
     }
 
     private void configureActionColumn() {
-        if (viewMode != ViewMode.QUEUE || userContext == null || userContext.role() != UserRole.REPRESENTATIVE) {
+        if (viewMode == ViewMode.QUEUE &&
+                userContext != null &&
+                userContext.role() == UserRole.REPRESENTATIVE) {
+
+            actionColumn.setCellFactory(col -> new TableCell<>() {
+                private final Button assignButton = new Button("Assign");
+
+                {
+                    assignButton.setOnAction(event -> {
+                        Complaint complaint = getTableView().getItems().get(getIndex());
+                        complaintService.assignToRepresentative(
+                                complaint.getId(),
+                                userContext.userId()
+                        );
+                        refresh();
+                    });
+                }
+
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setGraphic(empty ? null : assignButton);
+                }
+            });
+
+            actionColumn.setCellValueFactory(data ->
+                    new SimpleStringProperty("Assign"));
+
+        } else {
             actionColumn.setCellFactory(null);
-            return;
         }
-
-        actionColumn.setCellFactory(col -> new TableCell<>() {
-            private final Button assignButton = new Button("Assign");
-
-            {
-                assignButton.setOnAction(event -> {
-                    Complaint complaint = getTableView().getItems().get(getIndex());
-                    complaintService.assignToRepresentative(complaint.getId(), userContext.userId());
-                    refresh();
-                });
-            }
-
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : assignButton);
-            }
-        });
-
-        actionColumn.setCellValueFactory(data -> new SimpleStringProperty("Assign"));
     }
+
 }
