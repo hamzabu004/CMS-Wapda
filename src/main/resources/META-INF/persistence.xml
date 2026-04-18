@@ -11,6 +11,7 @@
         <class>com.electricity.cms.model.Consumer</class>
         <class>com.electricity.cms.model.Complaint</class>
         <class>com.electricity.cms.model.ComplaintStatusHistory</class>
+        <class>com.electricity.cms.model.ComplaintMessage</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <!--
