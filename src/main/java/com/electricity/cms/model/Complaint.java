@@ -47,9 +47,9 @@ public class Complaint {
     private LocalDateTime lastUpdated;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "last_sender_role")
     private UserRole lastSenderRole;
 
-    private boolean customerBlocked;
 
     @PrePersist
     void prePersist() {
@@ -123,6 +123,4 @@ public class Complaint {
     public UserRole getLastSenderRole() { return lastSenderRole; }
     public void setLastSenderRole(UserRole role) { this.lastSenderRole = role; }
 
-    public boolean isCustomerBlocked() { return customerBlocked; }
-    public void setCustomerBlocked(boolean val) { this.customerBlocked = val; }
 }

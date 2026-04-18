@@ -1,8 +1,14 @@
 package com.electricity.cms.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "complaint_messages")
@@ -11,16 +17,23 @@ public class ComplaintMessage {
     @Id
     private UUID id;
 
+    @Column(name = "complaint_id")
     private UUID complaintId;
+    
+    @Column(name = "sender_id")
     private UUID senderId;
 
+    @Column(name = "sender_name")
     private String senderName;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "sender_role")
     private UserRole senderRole;
 
+    @Column(name = "message_text")
     private String messageText;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     // ===== GETTERS & SETTERS =====
