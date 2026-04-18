@@ -8,11 +8,8 @@
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.electricity.cms.controller.ComplaintThreadController"
-      style="-fx-background-color: white; -fx-padding: 12;">
-
-    <stylesheets>
-        <String fx:value="@../styles/styles.css" />
-    </stylesheets>
+      style="-fx-background-color: white; -fx-padding: 12;"
+      stylesheets="@../styles/styles.css">
 
     <!-- Title -->
     <Label text="Complaint Thread"

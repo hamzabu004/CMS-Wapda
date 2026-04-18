@@ -9,10 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import java.lang.String?>
 
-<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electricity.cms.controller.DashboardController" style="-fx-background-color: transparent;">
-    <stylesheets>
-        <String fx:value="@../styles/styles.css" />
-    </stylesheets>
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electricity.cms.controller.DashboardController" style="-fx-background-color: transparent;" stylesheets="@../styles/styles.css">
     <content>
         <VBox spacing="14" style="-fx-padding: 10; -fx-background-color: #faf8f2;">
             <HBox alignment="CENTER_LEFT">
