@@ -14,6 +14,8 @@ import com.electricity.cms.service.ComplaintService;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -21,18 +23,11 @@ import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.control.TableRow;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.util.Callback;
-
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class CMPController implements UserContextAware {
 
@@ -55,7 +50,7 @@ public class CMPController implements UserContextAware {
     @FXML private TableColumn<Complaint, String> actionColumn;
 
     // 🔥 IMPORTANT (for loading thread in center)
-    @FXML private StackPane contentPane;
+    // @FXML private StackPane contentPane; // 🚫 REMOVED: Should be obtained from the Scene
 
     private final ComplaintService complaintService = new ComplaintService();
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -186,13 +181,14 @@ public class CMPController implements UserContextAware {
     // 🔥 NEW METHOD (THREAD OPENING)
     private void openComplaintThread(Complaint complaint) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ComplaintThread.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/electricity/cms/fxml/ComplaintThread.fxml"));
             Parent root = loader.load();
 
             ComplaintThreadController controller = loader.getController();
             controller.initData(complaint, userContext);
 
             // Replace center content
+            StackPane contentPane = (StackPane) complaintsTable.getScene().lookup("#contentPane");
             contentPane.getChildren().clear();
             contentPane.getChildren().add(root);
 
