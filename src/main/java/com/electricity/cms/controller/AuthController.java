@@ -56,6 +56,20 @@ public class AuthController {
         }
     }
 
+    @FXML
+    private void openRegistration(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/electricity/cms/fxml/CustomerRegistrationScreen.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root, 1200, 760));
+            stage.setResizable(true);
+        } catch (IOException ex) {
+            showError("Failed to load registration screen.");
+            System.err.println("Registration screen failed: " + ex.getMessage());
+        }
+    }
+
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
