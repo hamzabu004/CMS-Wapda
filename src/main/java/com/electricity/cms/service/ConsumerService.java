@@ -24,7 +24,7 @@ public class ConsumerService {
         this.consumerRepository = consumerRepository;
     }
 
-    public void registerConsumer(Person person, Consumer consumer, String email, String password) {
+    public void registerConsumer(Person person, Consumer consumer, String username, String email, String password) {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {
             em.getTransaction().begin();
@@ -33,7 +33,7 @@ public class ConsumerService {
 
             User user = new User();
             user.setEmail(email);
-            user.setUsername(email);
+            user.setUsername(username);
             user.setPassword(password);
             user.setRole(UserRole.CUSTOMER);
             user.setPerson(person);

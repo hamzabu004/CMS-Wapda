@@ -74,6 +74,19 @@ public class UserRepository {
         }
     }
 
+    public boolean existsUserByCnic(String cnic) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            Long count = em.createQuery(
+                "SELECT COUNT(c) FROM Consumer c WHERE c.person.cnic = :cnic", Long.class)
+                .setParameter("cnic", cnic)
+                .getSingleResult();
+            return count != null && count > 0;
+        } finally {
+            em.close();
+        }
+    }
+
     public List<User> findByRole(UserRole role) {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {

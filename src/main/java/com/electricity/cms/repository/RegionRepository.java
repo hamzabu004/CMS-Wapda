@@ -18,4 +18,16 @@ public class RegionRepository {
             em.close();
         }
     }
+
+    public Optional<Region> findFirstRegion() {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            return em.createQuery("SELECT r FROM Region r", Region.class)
+                    .setMaxResults(1)
+                    .getResultStream()
+                    .findFirst();
+        } finally {
+            em.close();
+        }
+    }
 }

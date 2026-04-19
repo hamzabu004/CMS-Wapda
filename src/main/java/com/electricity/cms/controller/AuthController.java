@@ -62,8 +62,9 @@ public class AuthController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/electricity/cms/fxml/CustomerRegistrationScreen.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root, 1200, 760));
-            stage.setResizable(true);
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.sizeToScene();
         } catch (IOException ex) {
             showError("Failed to load registration screen.");
             System.err.println("Registration screen failed: " + ex.getMessage());

@@ -1,49 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.VBox?>
-<?import java.lang.String?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<VBox spacing="10" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electricity.cms.controller.RegistrationController" style="-fx-padding: 16; -fx-background-color: #faf8f2;" stylesheets="@../styles/styles.css">
-    <Label text="Customer Registration" style="-fx-font-size: 19px; -fx-font-weight: bold;" />
+<VBox alignment="CENTER" prefWidth="600.0" prefHeight="550.0" spacing="0"
+      style="-fx-background-color: #F8FAF5;"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.electricity.cms.controller.RegistrationController">
 
-    <GridPane hgap="10" vgap="8">
-        <Label text="Full Name" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-        <TextField fx:id="fullNameField" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+    <!-- Header bar -->
+    <HBox alignment="CENTER" spacing="10"
+          style="-fx-background-color: #14532D; -fx-padding: 18 24 18 24;">
+        <Label style="-fx-font-size: 26px; -fx-text-fill: #FACC15;" text="⚡" />
+        <VBox alignment="CENTER_LEFT" spacing="2">
+            <Label style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: white;"
+                   text="Electricity Complaint Management" />
+            <Label style="-fx-font-size: 11px; -fx-text-fill: #BBF7D0;"
+                   text="Customer Registration Portal" />
+        </VBox>
+    </HBox>
 
-        <Label text="CNIC" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-        <TextField fx:id="cnicField" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+    <!-- Card -->
+    <VBox alignment="TOP_CENTER" maxWidth="450" spacing="18"
+          style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 12, 0, 0, 3); -fx-padding: 32 48 32 48;">
+        <VBox.margin>
+            <Insets bottom="32" top="32" />
+        </VBox.margin>
 
-        <Label text="Phone" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-        <TextField fx:id="phoneField" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+        <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #14532D;"
+               text="Register Account" />
 
-        <Label text="Email" GridPane.rowIndex="3" GridPane.columnIndex="0" />
-        <TextField fx:id="emailField" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+        <Separator />
 
-        <Label text="Password" GridPane.rowIndex="4" GridPane.columnIndex="0" />
-        <PasswordField fx:id="passwordField" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+        <GridPane hgap="12" vgap="14">
+            <columnConstraints>
+                <ColumnConstraints halignment="RIGHT" minWidth="90" prefWidth="95" />
+                <ColumnConstraints hgrow="ALWAYS" minWidth="180" prefWidth="250" />
+            </columnConstraints>
 
-        <Label text="Consumer Reference" GridPane.rowIndex="5" GridPane.columnIndex="0" />
-        <TextField fx:id="consumerReferenceField" GridPane.rowIndex="5" GridPane.columnIndex="1" />
+            <Label style="-fx-font-size: 13px; -fx-text-fill: #1F2937;" text="Username *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <TextField fx:id="usernameField" promptText="Enter your username" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-        <Label text="Meter Number" GridPane.rowIndex="6" GridPane.columnIndex="0" />
-        <TextField fx:id="meterNumberField" GridPane.rowIndex="6" GridPane.columnIndex="1" />
+            <Label style="-fx-font-size: 13px; -fx-text-fill: #1F2937;" text="Password *" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+            <PasswordField fx:id="passwordField" promptText="Enter a password" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-        <Label text="Connection Type" GridPane.rowIndex="7" GridPane.columnIndex="0" />
-        <ComboBox fx:id="connectionTypeCombo" GridPane.rowIndex="7" GridPane.columnIndex="1" />
+            <Label style="-fx-font-size: 13px; -fx-text-fill: #1F2937;" text="CNIC *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+            <TextField fx:id="cnicField" promptText="Enter your CNIC" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-        <Label text="Meter Address" GridPane.rowIndex="8" GridPane.columnIndex="0" />
-        <TextField fx:id="meterAddressField" GridPane.rowIndex="8" GridPane.columnIndex="1" />
+            <Label style="-fx-font-size: 13px; -fx-text-fill: #1F2937;" text="Email *" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+            <TextField fx:id="emailField" promptText="Enter your email address" style="-fx-font-size: 13px;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        </GridPane>
 
-        <Label text="Region ID" GridPane.rowIndex="9" GridPane.columnIndex="0" />
-        <TextField fx:id="regionIdField" GridPane.rowIndex="9" GridPane.columnIndex="1" />
-    </GridPane>
+        <Label fx:id="statusLabel" visible="false" managed="false" maxWidth="350"
+               style="-fx-font-size: 12px; -fx-background-radius: 4; -fx-padding: 6 10 6 10;"
+               text="" wrapText="true" />
 
-    <Button text="Register" onAction="#registerConsumer" styleClass="primary-button" />
-    <Label fx:id="statusLabel" />
+        <HBox spacing="10" alignment="CENTER">
+            <Button onAction="#goBackToLogin" text="Back to Login"
+                    style="-fx-background-color: transparent; -fx-text-fill: #15803D; -fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand;" />
+            <Button onAction="#registerConsumer" defaultButton="true" text="Register"
+                    style="-fx-background-color: #15803D; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 9 18 9 18;" />
+        </HBox>
+    </VBox>
+
+    <Label style="-fx-font-size: 10px; -fx-text-fill: #9CA3AF; -fx-padding: 0 0 10 0;"
+           text="© 2026 Electricity CMS. All rights reserved." />
 </VBox>
