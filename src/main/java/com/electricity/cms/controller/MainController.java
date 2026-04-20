@@ -74,7 +74,7 @@ public class MainController {
             return targets;
         }
         targets.add(new NavTarget("Complaints", "/com/electricity/cms/fxml/CMPScreen.fxml", "Complaints"));
-        if (role == UserRole.REPRESENTATIVE || role == UserRole.TECHNICIAN) {
+        if (role == UserRole.REPRESENTATIVE ) {
             targets.add(new NavTarget("Complaints Queue", "/com/electricity/cms/fxml/CMPScreen.fxml", "Complaints Queue"));
         }
         return targets;

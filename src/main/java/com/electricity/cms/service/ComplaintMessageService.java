@@ -14,13 +14,13 @@ public class ComplaintMessageService {
     private final ComplaintMessageRepository messageRepo = new ComplaintMessageRepository();
     private final ComplaintRepository complaintRepo = new ComplaintRepository();
 
-    // ✅ FIXED METHOD SIGNATURE
+    //  FIXED METHOD SIGNATURE
     public void sendMessage(UUID complaintId, UserContext user, String text) {
 
         Complaint complaint = complaintRepo.findById(complaintId).orElse(null);
         if (complaint == null) return;
 
-        // 🚫 BLOCK LOGIC
+        //  BLOCK LOGIC
         if (user.role() == UserRole.CUSTOMER && complaint.isCustomerBlocked()) {
             return;
         }
@@ -29,7 +29,7 @@ public class ComplaintMessageService {
         msg.setId(UUID.randomUUID());
         msg.setComplaintId(complaintId);
 
-        // ✅ USING UserContext
+        //  USING UserContext
         msg.setSenderId(user.userId());
         msg.setSenderName(user.userId().toString()); // if error, replace with user.userId().toString()
         msg.setSenderRole(user.role());
@@ -39,7 +39,7 @@ public class ComplaintMessageService {
 
         messageRepo.save(msg);
 
-        // ✅ Update complaint state
+        //  Update complaint state
         complaint.setLastSenderRole(user.role());
 
         if (user.role() == UserRole.CUSTOMER) {

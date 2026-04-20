@@ -50,7 +50,7 @@ public class CMPController implements UserContextAware {
     @FXML private TableColumn<Complaint, String> actionColumn;
 
     // 🔥 IMPORTANT (for loading thread in center)
-    // @FXML private StackPane contentPane; // 🚫 REMOVED: Should be obtained from the Scene
+    // @FXML private StackPane contentPane; // REMOVED: Should be obtained from the Scene
 
     private final ComplaintService complaintService = new ComplaintService();
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -225,6 +225,10 @@ public class CMPController implements UserContextAware {
 
         escalateButton.setVisible(roleCanEscalate);
         escalateButton.setManaged(roleCanEscalate);
+
+        // hide queue section for technition, customer, and manager  TODO
+//        actionColumn.setVisible(false);
+
         updateEscalateButtonState();
     }
 
