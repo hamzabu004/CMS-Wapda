@@ -1,5 +1,6 @@
 package com.electricity.cms.service;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 
 import com.electricity.cms.dto.DashboardStats;
 import com.electricity.cms.dto.DateRange;
+import com.electricity.cms.dto.UserContext;
 import com.electricity.cms.model.Complaint;
 import com.electricity.cms.model.ComplaintCategory;
 import com.electricity.cms.model.ComplaintStatus;
@@ -16,10 +18,12 @@ import com.electricity.cms.model.ComplaintStatusHistory;
 import com.electricity.cms.model.Consumer;
 import com.electricity.cms.model.User;
 import com.electricity.cms.model.UserRole;
+import com.electricity.cms.model.ComplaintMessage;
 import com.electricity.cms.repository.ComplaintRepository;
 import com.electricity.cms.repository.ComplaintStatusHistoryRepository;
 import com.electricity.cms.repository.ConsumerRepository;
 import com.electricity.cms.repository.UserRepository;
+import com.electricity.cms.repository.ComplaintMessageRepository;
 
 public class ComplaintService {
 
@@ -27,6 +31,7 @@ public class ComplaintService {
     private final ComplaintStatusHistoryRepository historyRepository;
     private final ConsumerRepository consumerRepository;
     private final UserRepository userRepository;
+    private final ComplaintMessageRepository messageRepo = new ComplaintMessageRepository();
 
     public ComplaintService() {
         this(
@@ -118,7 +123,7 @@ public class ComplaintService {
 
     public List<Complaint> getFilteredComplaints(UUID userId, UserRole role, String filter, DateRange range) {
         String normalized = filter == null ? "ALL" : filter.trim().toUpperCase(Locale.ROOT);
-        
+
         // For QUEUE view with REPRESENTATIVE, show all pending complaints across all regions
         if ("QUEUE".equals(normalized) && role == UserRole.REPRESENTATIVE) {
             return getUnassignedQueue().stream()
@@ -126,7 +131,7 @@ public class ComplaintService {
                 .sorted(Comparator.comparing(Complaint::getLastUpdated).reversed())
                 .collect(Collectors.toList());
         }
-        
+
         List<Complaint> base = complaintsVisibleToRole(userId, role);
 
         return base.stream()
@@ -243,4 +248,28 @@ public class ComplaintService {
         return userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found."));
     }
+
+    public void createComplaintWithInitialMessage(Complaint complaint, UserContext user, String description) {
+
+        //complaint.setId(UUID.randomUUID());
+        complaint.setCreatedAt(LocalDateTime.now());
+        complaint.setLastUpdated(LocalDateTime.now());
+
+        complaint.setCustomerBlocked(true);
+        complaint.setLastSenderRole(UserRole.CUSTOMER);
+
+        complaintRepository.save(complaint);
+
+        ComplaintMessage msg = new ComplaintMessage();
+        msg.setId(UUID.randomUUID());
+        msg.setComplaintId(complaint.getId());
+        msg.setSenderId(user.userId());
+        msg.setSenderName(user.displayName());
+        msg.setSenderRole(UserRole.CUSTOMER);
+        msg.setMessageText(description);
+        msg.setCreatedAt(LocalDateTime.now());
+
+        messageRepo.save(msg);
+    }
+
 }
