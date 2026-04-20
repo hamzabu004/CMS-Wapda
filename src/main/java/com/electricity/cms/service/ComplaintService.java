@@ -244,7 +244,7 @@ public class ComplaintService {
             return complaint.getStatus() == ComplaintStatus.RESOLVED;
         }
         if ("UNRESOLVED".equals(filter)) {
-            return complaint.getStatus() != ComplaintStatus.RESOLVED && !isEscalatedComplaint(complaint);
+            return complaint.getStatus() != ComplaintStatus.RESOLVED && !isEscalatedByUser(complaint, userId);
         }
         if ("ESCALATED".equals(filter)) {
             if (role == UserRole.REPRESENTATIVE || role == UserRole.TECHNICIAN) {
@@ -270,6 +270,11 @@ public class ComplaintService {
     public boolean isComplaintEscalated(UUID complaintId) {
         Complaint complaint = getComplaintOrThrow(complaintId);
         return isEscalatedComplaint(complaint);
+    }
+
+    public boolean isComplaintEscalatedByUser(UUID complaintId, UUID userId) {
+        Complaint complaint = getComplaintOrThrow(complaintId);
+        return isEscalatedByUser(complaint, userId);
     }
 
     private boolean isEscalatedByUser(Complaint complaint, UUID userId) {

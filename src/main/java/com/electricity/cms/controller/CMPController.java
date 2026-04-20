@@ -26,6 +26,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 
@@ -64,7 +65,22 @@ public class CMPController implements UserContextAware {
         configureColumns();
         actionColumn.setVisible(false);
 
-        // 🔥 DOUBLE CLICK TO OPEN THREAD
+        // Group toggles so only one can be selected at a time
+        ToggleGroup filterGroup = new ToggleGroup();
+        allToggle.setToggleGroup(filterGroup);
+        unresolvedToggle.setToggleGroup(filterGroup);
+        resolvedToggle.setToggleGroup(filterGroup);
+        escalatedByMeToggle.setToggleGroup(filterGroup);
+
+        // Prevent the active toggle from being unselected when clicked
+        filterGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+            if (newToggle == null && oldToggle != null) {
+                // If the group has no new selection, meaning the user clicked the selected one, reselect it.
+                filterGroup.selectToggle(oldToggle);
+            }
+        });
+
+        //  set event handler for double-clicking a row to open the complaint thread
         complaintsTable.setRowFactory(tv -> {
             TableRow<Complaint> row = new TableRow<>();
 
@@ -282,7 +298,7 @@ public class CMPController implements UserContextAware {
             return;
         }
 
-        boolean alreadyEscalated = complaintService.isComplaintEscalated(selected.getId());
+        boolean alreadyEscalated = complaintService.isComplaintEscalatedByUser(selected.getId(), userContext.userId());
         escalateButton.setDisable(alreadyEscalated);
     }
 
