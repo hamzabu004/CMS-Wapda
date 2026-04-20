@@ -242,8 +242,11 @@ public class CMPController implements UserContextAware {
         escalateButton.setVisible(roleCanEscalate);
         escalateButton.setManaged(roleCanEscalate);
 
-        // hide queue section for technition, customer, and manager  TODO
-//        actionColumn.setVisible(false);
+        escalatedByMeToggle.setVisible(roleCanEscalate);
+        escalatedByMeToggle.setManaged(roleCanEscalate);
+
+        // hide queue section for technition, customer, and manager  
+        actionColumn.setVisible(false);
 
         updateEscalateButtonState();
     }
