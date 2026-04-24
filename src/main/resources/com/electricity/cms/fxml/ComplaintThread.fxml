@@ -39,4 +39,12 @@
                 style="-fx-background-color: #3a5a3c; -fx-text-fill: white;" />
     </HBox>
 
+    <!-- Action Buttons -->
+    <HBox spacing="8">
+        <Button text="Mark as Resolved"
+                fx:id="resolveButton"
+                onAction="#handleResolve"
+                style="-fx-background-color: #28a745; -fx-text-fill: white;" />
+    </HBox>
+
 </VBox>

@@ -13,12 +13,17 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+import com.electricity.cms.dto.UserContext;
+import com.electricity.cms.service.AuthService;
+
 public class LoginController {
 
     @FXML private TextField     usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Button        loginButton;
     @FXML private Label         errorLabel;
+
+    private final AuthService authService = new AuthService();
 
     @FXML
     public void initialize() {
@@ -41,21 +46,33 @@ public class LoginController {
             return;
         }
 
-        // Navigate to dashboard
-        loadPage("/com/electricity/cms/fxml/customer-dashboard.fxml", event);
-        System.out.println("[LoginController] Navigating to dashboard.");
+        try {
+            UserContext userContext = authService.login(email, password);
+            System.out.println("[LoginController] Login successful for user: " + userContext.displayName());
+
+            // Load dashboard with user context
+            loadDashboard(userContext, event);
+
+        } catch (Exception e) {
+            errorLabel.setText("Invalid username or password.");
+            errorLabel.setVisible(true);
+            errorLabel.setManaged(true);
+            System.out.println("[LoginController] Login failed: " + e.getMessage());
+        }
     }
 
-    // =============================
-    // Utility
-    // =============================
-
-    private void loadPage(String fxmlPath, ActionEvent event) {
+    private void loadDashboard(UserContext userContext, ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/electricity/cms/fxml/customer-dashboard.fxml"));
+            Parent root = loader.load();
+
+            CustomerDashboardController controller = loader.getController();
+            controller.setUserContext(userContext);
+
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setResizable(true);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
