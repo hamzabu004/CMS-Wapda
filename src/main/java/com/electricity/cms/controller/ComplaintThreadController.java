@@ -9,13 +9,19 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 public class ComplaintThreadController {
+
+    private static final DateTimeFormatter MESSAGE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
 
     @FXML private VBox messagesContainer;
     @FXML private TextField messageField;
@@ -60,26 +66,61 @@ public class ComplaintThreadController {
         boolean isMine = msg.getSenderId().equals(currentUser.userId());
 
         VBox bubble = new VBox();
-        bubble.setSpacing(3);
+        bubble.getStyleClass().addAll("thread-message-bubble", isMine ? "thread-message-mine" : "thread-message-other");
 
-        Label name = new Label(msg.getSenderName());
-        Label role = new Label(msg.getSenderRole().toString());
-        Label text = new Label(msg.getMessageText());
-        Label time = new Label(
-                msg.getCreatedAt().format(DateTimeFormatter.ofPattern("dd MMM HH:mm"))
-        );
+        Label sender = new Label(safeText(msg.getSenderName(), "Unknown Sender"));
+        sender.getStyleClass().add("thread-message-sender");
 
-        bubble.getChildren().addAll(name, role, text, time);
+        Label role = new Label(formatRole(msg.getSenderRole()));
+        role.getStyleClass().add("thread-message-role");
 
-        bubble.setStyle(isMine
-                ? "-fx-background-color: #3a5a3c; -fx-text-fill: white; -fx-padding: 8;"
-                : "-fx-background-color: #f5f0e8; -fx-padding: 8;"
-        );
+        Label time = new Label(msg.getCreatedAt() != null
+                ? msg.getCreatedAt().format(MESSAGE_TIME_FORMATTER)
+                : "Unknown time");
+        time.getStyleClass().add("thread-message-time");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox header = new HBox(sender, role, spacer, time);
+        header.getStyleClass().add("thread-message-header");
+
+        Label text = new Label(safeText(msg.getMessageText(), ""));
+        text.setWrapText(true);
+        text.setMaxWidth(520);
+        text.getStyleClass().add("thread-message-text");
+
+        bubble.getChildren().addAll(header, text);
+        bubble.setMaxWidth(560);
 
         HBox container = new HBox(bubble);
         container.setAlignment(isMine ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        container.getStyleClass().add("thread-message-row");
 
         return container;
+    }
+
+    private String safeText(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private String formatRole(UserRole role) {
+        if (role == null) {
+            return "Unknown";
+        }
+        String normalized = role.name().toLowerCase(Locale.ROOT).replace('_', ' ');
+        String[] words = normalized.split(" ");
+        StringBuilder display = new StringBuilder();
+        for (String word : words) {
+            if (word.isEmpty()) {
+                continue;
+            }
+            if (display.length() > 0) {
+                display.append(' ');
+            }
+            display.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+        }
+        return display.toString();
     }
 
     @FXML
