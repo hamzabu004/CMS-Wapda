@@ -50,6 +50,10 @@ public class RegistrationController {
         String cnic = cnicField.getText();
         String email = emailField.getText();
 
+        if (cnic != null) {
+            cnic = cnic.trim();
+        }
+
         if (username == null || username.isBlank() || password == null || password.isBlank() ||
             cnic == null || cnic.isBlank() || email == null || email.isBlank()) {
             showError("All fields (Username, Password, CNIC, Email) are required.");
@@ -63,23 +67,19 @@ public class RegistrationController {
                 return;
             }
 
-            // Validate Duplicate CNIC via Person
+            // CNIC must already be present in the person table.
             Optional<Person> existingPerson = personRepository.findByCnic(cnic);
-            if (existingPerson.isPresent()) {
-                if (userRepository.existsUserByCnic(cnic)) {
-                    showError("User with this CNIC already exists.");
-                    return;
-                }
+            if (existingPerson.isEmpty()) {
+                showError("CNIC not found in person records. Please contact support.");
+                return;
             }
 
-            // Proceed with logic
-            Person person = existingPerson.orElseGet(() -> {
-                Person p = new Person();
-                p.setCnic(cnic);
-                p.setFullName("User " + username); // Placeholder since field removed
-                p.setPhoneNumber("N/A"); // Placeholder since field removed
-                return p;
-            });
+            if (userRepository.existsUserByCnic(cnic)) {
+                showError("User with this CNIC already exists.");
+                return;
+            }
+
+            Person person = existingPerson.get();
 
             // Assign first Region
             Region firstRegion = regionRepository.findFirstRegion()

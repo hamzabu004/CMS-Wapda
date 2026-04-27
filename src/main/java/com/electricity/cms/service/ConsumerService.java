@@ -29,18 +29,25 @@ public class ConsumerService {
         try {
             em.getTransaction().begin();
 
-            em.persist(person);
+            if (person == null || person.getId() == null) {
+                throw new IllegalArgumentException("CNIC must already exist in person records before registration.");
+            }
+
+            Person managedPerson = em.find(Person.class, person.getId());
+            if (managedPerson == null) {
+                throw new IllegalArgumentException("Referenced CNIC record does not exist.");
+            }
 
             User user = new User();
             user.setEmail(email);
             user.setUsername(username);
             user.setPassword(password);
             user.setRole(UserRole.CUSTOMER);
-            user.setPerson(person);
+            user.setPerson(managedPerson);
             user.setRegion(consumer.getRegion());
             em.persist(user);
 
-            consumer.setPerson(person);
+            consumer.setPerson(managedPerson);
             consumer.setUser(user);
             em.persist(consumer);
 
