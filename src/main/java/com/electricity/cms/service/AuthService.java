@@ -5,6 +5,7 @@ import com.electricity.cms.model.User;
 import com.electricity.cms.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.LazyInitializationException;
 
 public class AuthService {
 
@@ -31,8 +32,8 @@ public class AuthService {
             if (user.getPerson() != null && user.getPerson().getFullName() != null) {
                 displayName = user.getPerson().getFullName();
             }
-        } catch (EntityNotFoundException ignored) {
-            // Keep username fallback when legacy FK points to a missing person row.
+        } catch (EntityNotFoundException | LazyInitializationException ignored) {
+            // Keep username fallback when person cannot be loaded or is missing
         }
 
         return new UserContext(

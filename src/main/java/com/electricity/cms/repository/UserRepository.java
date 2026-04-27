@@ -78,7 +78,7 @@ public class UserRepository {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {
             Long count = em.createQuery(
-                "SELECT COUNT(c) FROM Consumer c WHERE c.person.cnic = :cnic", Long.class)
+                "SELECT COUNT(u) FROM User u JOIN u.person p WHERE p.cnic = :cnic", Long.class)
                 .setParameter("cnic", cnic)
                 .getSingleResult();
             return count != null && count > 0;
@@ -120,6 +120,22 @@ public class UserRepository {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {
             return Optional.ofNullable(em.find(User.class, id));
+        } finally {
+            em.close();
+        }
+    }
+
+    public Optional<User> findByPersonId(UUID personId) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            List<User> users = em.createQuery(
+                    "SELECT u FROM User u JOIN u.person p WHERE p.id = :personId",
+                    User.class
+                )
+                .setParameter("personId", personId)
+                .setMaxResults(1)
+                .getResultList();
+            return users.stream().findFirst();
         } finally {
             em.close();
         }

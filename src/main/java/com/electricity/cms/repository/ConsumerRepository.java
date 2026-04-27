@@ -74,6 +74,25 @@ public class ConsumerRepository {
         }
     }
 
+    public Optional<Consumer> findByPersonId(UUID personId) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            List<Consumer> result = em.createQuery(
+                    "SELECT c FROM Consumer c " +
+                    "JOIN c.person p " +
+                    "JOIN c.region r " +
+                    "WHERE p.id = :personId",
+                    Consumer.class
+                )
+                .setParameter("personId", personId)
+                .setMaxResults(1)
+                .getResultList();
+            return result.stream().findFirst();
+        } finally {
+            em.close();
+        }
+    }
+
     public List<Consumer> findAllByUserId(UUID userId) {
         EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
         try {
@@ -101,6 +120,20 @@ public class ConsumerRepository {
                     Consumer.class
                 )
                 .setParameter("regionId", regionId)
+                .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Consumer> findAllByPersonId(UUID personId) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT c FROM Consumer c WHERE c.person.id = :personId ORDER BY c.createdAt DESC",
+                    Consumer.class
+                )
+                .setParameter("personId", personId)
                 .getResultList();
         } finally {
             em.close();

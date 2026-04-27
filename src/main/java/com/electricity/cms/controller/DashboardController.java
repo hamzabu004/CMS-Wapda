@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.electricity.cms.dto.DashboardStats;
 import com.electricity.cms.dto.DateRange;
@@ -112,7 +113,8 @@ public class DashboardController implements UserContextAware {
             return;
         }
 
-        DashboardStats stats = complaintService.getDashboardStats(userContext.userId(), userContext.role(), range);
+        UUID actorUserId = userContext.userId();
+        DashboardStats stats = complaintService.getDashboardStats(actorUserId, userContext.role(), range);
 
         totalLabel.setText(Long.toString(stats.getTotalComplaints()));
         resolvedLabel.setText(Long.toString(stats.getResolved()));

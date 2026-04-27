@@ -1,10 +1,12 @@
 package com.electricity.cms.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.electricity.cms.dto.UserContext;
 import com.electricity.cms.model.ComplaintCategory;
 import com.electricity.cms.model.Consumer;
+import com.electricity.cms.model.Person;
 import com.electricity.cms.service.ComplaintService;
 import com.electricity.cms.service.ConsumerService;
 
@@ -50,7 +52,10 @@ public class SubmitComplaintController implements UserContextAware {
 
         try {
             System.out.println("Loading consumers for user: " + userContext.userId());
-            consumers = consumerService.getAllConsumersByUserId(userContext.userId());
+            UUID person = consumerService.getPersonId(userContext.userId());
+            System.out.println("Found person: " + person);
+            consumers = consumerService.getAllConsumersByPersonID(person);
+
             System.out.println("Found consumers: " + consumers.size());
             displayConsumerRadioButtons();
         } catch (RuntimeException ex) {

@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "users")
@@ -39,12 +38,12 @@ public class User {
     @Column(name = "role", nullable = false, length = 20)
     private UserRole role;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name = "region_id")
     private Region region;
 
-    // users.person_id was removed from schema; keep transient field for compatibility.
-    @Transient
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "person_id")
     private Person person;
 
     @Column(name = "created_at", nullable = false)

@@ -24,43 +24,6 @@ public class ConsumerService {
         this.consumerRepository = consumerRepository;
     }
 
-    public void registerConsumer(Person person, Consumer consumer, String username, String email, String password) {
-        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
-        try {
-            em.getTransaction().begin();
-
-            if (person == null || person.getId() == null) {
-                throw new IllegalArgumentException("CNIC must already exist in person records before registration.");
-            }
-
-            Person managedPerson = em.find(Person.class, person.getId());
-            if (managedPerson == null) {
-                throw new IllegalArgumentException("Referenced CNIC record does not exist.");
-            }
-
-            User user = new User();
-            user.setEmail(email);
-            user.setUsername(username);
-            user.setPassword(password);
-            user.setRole(UserRole.CUSTOMER);
-            user.setPerson(managedPerson);
-            user.setRegion(consumer.getRegion());
-            em.persist(user);
-
-            consumer.setPerson(managedPerson);
-            consumer.setUser(user);
-            em.persist(consumer);
-
-            em.getTransaction().commit();
-        } catch (RuntimeException e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
 
     public Consumer getConsumerByUserId(UUID userId) {
         return consumerRepository.findByUserId(userId)
@@ -69,5 +32,37 @@ public class ConsumerService {
 
     public List<Consumer> getAllConsumersByUserId(UUID userId) {
         return consumerRepository.findAllByUserId(userId);
+    }
+
+    public List<Consumer> getAllConsumersByPersonID(UUID personId) {
+        return consumerRepository.findAllByPersonId(personId);
+    }
+
+    public Person getPersonByID(UUID personId) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            return em.find(Person.class, personId);
+        } finally {
+            em.close();
+        }
+    }
+
+     public User getUserByID(UUID userId) {
+        EntityManager em = DatabaseUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            return em.find(User.class, userId);
+        } finally {
+            em.close();
+        }
+    }
+
+     public UserRole getUserRoleByID(UUID userId) {
+        User user = getUserByID(userId);
+        return user.getRole();
+    }
+
+    public UUID getPersonId(UUID userId)
+    {
+        return getUserByID(userId).getPerson().getId();
     }
 }

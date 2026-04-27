@@ -177,7 +177,7 @@ public class ComplaintService {
             .toList();
     }
 
-    public List<Complaint> getFilteredComplaints(UUID userId, UserRole role, String filter, DateRange range) {
+    public List<Complaint> getFilteredComplaints(UUID actorUserId, UserRole role, String filter, DateRange range) {
         String normalized = filter == null ? "ALL" : filter.trim().toUpperCase(Locale.ROOT);
 
         // For QUEUE view with REPRESENTATIVE, show all pending complaints across all regions
@@ -188,17 +188,17 @@ public class ComplaintService {
                 .collect(Collectors.toList());
         }
 
-        List<Complaint> base = complaintsVisibleToRole(userId, role);
+        List<Complaint> base = complaintsVisibleToRole(actorUserId, role);
 
         return base.stream()
             .filter(c -> isWithinDateRange(c, range))
-            .filter(c -> matchesFilter(c, normalized, userId, role))
+            .filter(c -> matchesFilter(c, normalized, actorUserId, role))
             .sorted(Comparator.comparing(Complaint::getLastUpdated).reversed())
             .collect(Collectors.toList());
     }
 
-    public DashboardStats getDashboardStats(UUID userId, UserRole role, DateRange range) {
-        List<Complaint> complaints = getFilteredComplaints(userId, role, "ALL", range);
+    public DashboardStats getDashboardStats(UUID actorUserId, UserRole role, DateRange range) {
+        List<Complaint> complaints = getFilteredComplaints(actorUserId, role, "ALL", range);
         DashboardStats stats = new DashboardStats();
         stats.setTotalComplaints(complaints.size());
         stats.setResolved(complaints.stream().filter(c -> c.getStatus() == ComplaintStatus.RESOLVED).count());
@@ -206,7 +206,7 @@ public class ComplaintService {
         stats.setEscalated(complaints.stream().filter(this::isEscalatedComplaint).count());
 
         if (role == UserRole.REPRESENTATIVE || role == UserRole.MANAGER) {
-            User user = getUserOrThrow(userId);
+            User user = getUserOrThrow(actorUserId);
             UUID regionId = user.getRegion() != null ? user.getRegion().getId() : null;
             long totalTech = regionId == null ? 0 : userRepository.findTechniciansByRegion(regionId).size();
             long assigned = complaints.stream().filter(this::isAssignedToTechnician).count();
@@ -241,7 +241,7 @@ public class ComplaintService {
             && (complaint.getCreatedAt().isEqual(range.to()) || complaint.getCreatedAt().isBefore(range.to()));
     }
 
-    private boolean matchesFilter(Complaint complaint, String filter, UUID userId, UserRole role) {
+    private boolean matchesFilter(Complaint complaint, String filter, UUID actorUserId, UserRole role) {
         if ("ALL".equals(filter) || filter.isBlank()) {
             return true;
         }
@@ -249,11 +249,11 @@ public class ComplaintService {
             return complaint.getStatus() == ComplaintStatus.RESOLVED;
         }
         if ("UNRESOLVED".equals(filter)) {
-            return complaint.getStatus() != ComplaintStatus.RESOLVED && !isEscalatedByUser(complaint, userId);
+            return complaint.getStatus() != ComplaintStatus.RESOLVED && !isEscalatedByUser(complaint, actorUserId);
         }
         if ("ESCALATED".equals(filter)) {
             if (role == UserRole.REPRESENTATIVE || role == UserRole.TECHNICIAN) {
-                return isEscalatedByUser(complaint, userId);
+                return isEscalatedByUser(complaint, actorUserId);
             }
             return isEscalatedComplaint(complaint);
         }
@@ -296,17 +296,27 @@ public class ComplaintService {
                 && h.getToUser().getRole() == UserRole.TECHNICIAN);
     }
 
-    private List<Complaint> complaintsVisibleToRole(UUID userId, UserRole role) {
+    private List<Complaint> complaintsVisibleToRole(UUID actorUserId, UserRole role) {
         if (role == UserRole.CUSTOMER) {
-            Consumer consumer = consumerRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("No consumer linked to customer user."));
-            return complaintRepository.findByConsumerId(consumer.getId());
+            User customer = getUserOrThrow(actorUserId);
+
+            Optional<Consumer> consumer;
+            if (customer.getPerson() != null && customer.getPerson().getId() != null) {
+                consumer = consumerRepository.findByPersonId(customer.getPerson().getId());
+            } else {
+                // Backward compatibility for legacy accounts where users.person_id is null.
+                consumer = consumerRepository.findByUserId(actorUserId);
+            }
+
+            Consumer resolvedConsumer = consumer
+                .orElseThrow(() -> new IllegalArgumentException("No consumer linked to this customer account."));
+            return complaintRepository.findByConsumerId(resolvedConsumer.getId());
         }
 
-        User user = getUserOrThrow(userId);
+        User user = getUserOrThrow(actorUserId);
 
         if (role == UserRole.REPRESENTATIVE) {
-            List<Complaint> assignedToRepresentative = historyRepository.findAssignedComplaintIdsForUser(userId).stream()
+            List<Complaint> assignedToRepresentative = historyRepository.findAssignedComplaintIdsForUser(actorUserId).stream()
                 .map(complaintRepository::findById)
                 .flatMap(Optional::stream)
                 .toList();

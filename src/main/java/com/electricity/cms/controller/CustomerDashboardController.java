@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 import com.electricity.cms.dto.UserContext;
 import com.electricity.cms.model.Complaint;
@@ -93,9 +94,11 @@ public class CustomerDashboardController implements UserContextAware {
     private void loadDashboardData() {
         if (userContext == null) return;
 
+        UUID actorUserId = userContext.userId();
+
         // Load recent complaints (limit to 10 most recent)
         var complaints = complaintService.getFilteredComplaints(
-            userContext.userId(),
+            actorUserId,
             userContext.role(),
             "ALL",
             null // no date range for recent
@@ -104,7 +107,7 @@ public class CustomerDashboardController implements UserContextAware {
         recentComplaintsTable.getItems().setAll(complaints);
 
         // Load stats
-        var stats = complaintService.getDashboardStats(userContext.userId(), userContext.role(), null);
+        var stats = complaintService.getDashboardStats(actorUserId, userContext.role(), null);
         totalComplaintsLabel.setText(String.valueOf(stats.getTotalComplaints()));
         resolvedLabel.setText(String.valueOf(stats.getResolved()));
         pendingLabel.setText(String.valueOf(stats.getUnresolved()));

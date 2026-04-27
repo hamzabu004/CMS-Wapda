@@ -1,17 +1,15 @@
 package com.electricity.cms.controller;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.Optional;
 
-import com.electricity.cms.model.ConnType;
 import com.electricity.cms.model.Consumer;
 import com.electricity.cms.model.Person;
-import com.electricity.cms.model.Region;
+import com.electricity.cms.model.User;
+import com.electricity.cms.model.UserRole;
+import com.electricity.cms.repository.ConsumerRepository;
 import com.electricity.cms.repository.PersonRepository;
-import com.electricity.cms.repository.RegionRepository;
 import com.electricity.cms.repository.UserRepository;
-import com.electricity.cms.service.ConsumerService;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -32,8 +30,7 @@ public class RegistrationController {
     @FXML private TextField emailField;
     @FXML private Label statusLabel;
 
-    private final ConsumerService consumerService = new ConsumerService();
-    private final RegionRepository regionRepository = new RegionRepository();
+    private final ConsumerRepository consumerRepository = new ConsumerRepository();
     private final PersonRepository personRepository = new PersonRepository();
     private final UserRepository userRepository = new UserRepository();
 
@@ -81,21 +78,23 @@ public class RegistrationController {
 
             Person person = existingPerson.get();
 
-            // Assign first Region
-            Region firstRegion = regionRepository.findFirstRegion()
-                .orElseThrow(() -> new IllegalStateException("No regions found in database."));
+            // Verify consumer exists for this person
+            Optional<Consumer> existingConsumer = consumerRepository.findByPersonId(person.getId());
+            if (existingConsumer.isEmpty()) {
+                showError("No consumer record found for this CNIC. Please contact support.");
+                return;
+            }
 
-            Consumer consumer = new Consumer();
-            consumer.setRegion(firstRegion);
-            // dummy fields for non-null schema requirements since removed from UI
-            long epoch = System.currentTimeMillis();
-            consumer.setConsumerReference("REF-" + epoch);
-            consumer.setMeterNumber("MTR-" + epoch);
-            consumer.setConnectionType(ConnType.RESIDENT);
-            consumer.setInstallationDate(LocalDate.now());
-            consumer.setMeterAddress("Not Provided");
+            // Create and persist new user account linked to this person
+            User user = new User();
+            user.setUsername(username);
+            user.setPassword(password);
+            user.setEmail(email);
+            user.setRole(UserRole.CUSTOMER);
+            user.setPerson(person);
+            // Note: region is NOT set for customer users (will be null)
 
-            consumerService.registerConsumer(person, consumer, username, email, password);
+            userRepository.save(user);
 
             showSuccess("Registration successful! Redirecting to login...");
 

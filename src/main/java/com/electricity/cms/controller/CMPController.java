@@ -265,8 +265,10 @@ public class CMPController implements UserContextAware {
             default -> "ALL";
         };
 
+        UUID actorUserId = userContext.userId();
+
         List<Complaint> complaints = complaintService.getFilteredComplaints(
-            userContext.userId(),
+            actorUserId,
             userContext.role(),
             filter,
             DateRange.currentMonth()
